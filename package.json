@@ -1,0 +1,15 @@
+{
+	"name": "ink-test",
+	"version": "1.0.0",
+	"main": "index.js",
+	"license": "MIT",
+	"devDependencies": {
+		"babel-plugin-transform-react-jsx": "^6.24.1",
+		"babel-register": "^6.24.1"
+	},
+	"dependencies": {
+		"ink": "^0.3.1",
+		"ramda": "^0.24.1",
+		"term-size": "^1.2.0"
+	}
+}
