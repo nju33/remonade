@@ -1,4 +1,4 @@
-const {h, Component, Text} = require('ink');
+import {h, Component, Text} from 'ink';
 
 module.exports = class Subject extends Component {
   render(props) {
