@@ -1,5 +1,6 @@
 const {h, render, Component, Text} = require('ink');
 const termSize = require('term-size');
+const Subject = require('./components/subject');
 
 class Counter extends Component {
 	constructor() {
@@ -15,22 +16,6 @@ class Counter extends Component {
 		};
 	}
 
-	get localLogs() {
-		Array.from(this.state.log.local)
-			.reverse()
-			.slice(0, this.state.rowLength - 3)
-			.reverse();
-		return [
-		]
-	}
-
-	get remoteLogs() {
-		return [
-			...Array(this.state.rowLength - 3).fill(''),
-			...Array.from(this.state.log.remote)
-		].reverse().slice(0, this.state.rowLength - 3).reverse();
-	}
-
 	render() {
 		const localLogs = (() => {
 			if (this.state.log.local.length === 0) {
@@ -41,32 +26,40 @@ class Counter extends Component {
 				.reverse()
 				.slice(0, this.state.rowLength - 3)
 				.reverse();
-			const filler = Array(0, this.state.rowLength - 3).fill('');
+			const filler = Array(this.state.rowLength - 3).fill('');
 			return [
 				...logs,
 				...filler
 			].slice(0, this.state.rowLength - 3);
+		})();
 
+		const remoteLogs = (() => {
+			if (this.state.log.remote.length === 0) {
+				return Array(this.state.rowLength - 3).fill('');
+			}
+
+			const logs = Array.from(this.state.log.remote)
+				.reverse()
+				.slice(0, this.state.rowLength - 3)
+				.reverse();
+			const filler = Array(this.state.rowLength - 3).fill('');
+			return [
+				...logs,
+				...filler
+			].slice(0, this.state.rowLength - 3);
 		})();
 
 		return (
 			<div>
 				<div>
-					<div>
-						<Text>Local</Text>
-					</div>
+					<Subject color="green">Local</Subject>
 					{localLogs.map(line => (
 						<div>{line}</div>
 					))}
-					{/* <Text green>
-						{this.state.i} tests passed
-					</Text> */}
 				</div>
 				<div>
-					<div>
-						<Text>Remote</Text>
-					</div>
-					{this.remoteLogs.map(line => (
+					<Subject color="red">Remote</Subject>
+					{remoteLogs.map(line => (
 						<div>{line}</div>
 					))}
 				</div>
