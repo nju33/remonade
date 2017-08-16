@@ -1,10 +1,11 @@
 import {h, Component, Text} from 'ink';
 import termSize from 'term-size';
-import Subject from './subject';
+import Subject from 'components/subject';
+import RemoteMachine from 'helpers/remote-machine';
 
 export default class Remonade extends Component {
-	constructor() {
-		super();
+	constructor(props) {
+		super(props);
 
 		this.state = {
 			rowLength: Math.floor(termSize().rows / 2),
@@ -67,21 +68,26 @@ export default class Remonade extends Component {
 		);
 	}
 
-	componentDidMount() {
+	async componentDidMount() {
+		const remoteMachine = new RemoteMachine(this.props.ssh);
+		const command = await remoteMachine.makeCommand();
+		command.stream.on('data', data => {
+			console.log(data.toString());
+		});
+		command.run(this.props.commands);
+
 		this.timer = setInterval(() => {
 			this.setState({
 				log: {
 					local: [...this.state.log.local, Math.random()],
 					remote: [...this.state.log.remote, Math.random()]
 				},
-				i: this.state.i + 1
+				// i: this.state.i + 1
 			});
-		}, 500);
+		}, 50000);
 	}
 
 	componentWillUnmount() {
 		clearInterval(this.timer);
 	}
 }
-
-// render(<Counter/>);

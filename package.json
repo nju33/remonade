@@ -3,7 +3,11 @@
 	"version": "1.0.0",
 	"main": "index.js",
 	"license": "MIT",
+	"moduleRoots": [
+		"libs"
+	],
 	"devDependencies": {
+		"babel-plugin-module-resolver": "^2.7.1",
 		"babel-plugin-transform-react-jsx": "^6.24.1",
 		"babel-preset-env": "^1.6.0",
 		"babel-register": "^6.24.1"
@@ -14,7 +18,10 @@
 		"interpret": "^1.0.3",
 		"liftoff": "^2.3.0",
 		"minimist": "^1.2.0",
+		"p-props": "^1.0.0",
+		"p-series": "^1.0.0",
 		"ramda": "^0.24.1",
+		"ssh2": "^0.5.5",
 		"term-size": "^1.2.0",
 		"yargs": "^8.0.2"
 	}

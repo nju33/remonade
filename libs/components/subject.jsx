@@ -1,7 +1,7 @@
 import {h, Component, Text} from 'ink';
 
 module.exports = class Subject extends Component {
-  render(props) {
+  render() {
     const color = this.props.color;
     const bgColor = (() => (
       'bg' +
