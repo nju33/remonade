@@ -5,24 +5,35 @@ export default {
     identifyFile: process.env.HOME + '/.ssh/ec2_id'
   },
   base: {
-    [__dirname]: '/home/ec2-user'
+    local: __dirname,
+    remote: '/home/ec2-user'
   },
   volumes: [
     {
+      main: 'local',
+      commands: [
+        'yarn tsc'
+      ],
       local: 'src/scripts',
-      remote: 'remote/aaa',
-      handleChangeCommand: '...'
+      remote: 'remote/scripts'
     },
     {
+      main: 'remote'
+      remote: 'remote/scripts/**/*.js',
+      local: 'dist/'
+    }
+    {
+      main: 'local',
+      commands: [
+        'yarn gulp styles'
+      ],
       local: 'src/styles',
-      remote: 'remote/styles',
-      handleChangeCommand: '...'
+      remote: 'remote/styles'
     }
   ],
   commands: [
     'echo 1',
     'sleep 3',
-    // "cat <<HOME\naa\nasdfsa\nasdfasdf\nadsfas\ndfgsdfg\nasd\nHOME"
     'tsc --watch'
   ]
 };
