@@ -30,4 +30,4 @@ export default class Remonade extends EventEmitter {
 	}
 };
 
-process.on('unhandledRejection', console.dir);
+// process.on('unhandledRejection', console.dir);

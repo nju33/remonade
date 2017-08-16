@@ -2,6 +2,7 @@ import {h, Component, Text} from 'ink';
 import termSize from 'term-size';
 import Subject from 'components/subject';
 import RemoteMachine from 'helpers/remote-machine';
+import Command from 'helpers/command';
 
 export default class Remonade extends Component {
 	constructor(props) {
@@ -23,6 +24,9 @@ export default class Remonade extends Component {
 				return Array(this.state.rowLength - 3).fill('');
 			}
 
+			// if (this.state.log.local.length > 2) {
+			// 	console.log(this.state.log.local);
+			// }
 			const logs = Array.from(this.state.log.local)
 				.reverse()
 				.slice(0, this.state.rowLength - 3)
@@ -57,6 +61,12 @@ export default class Remonade extends Component {
 					{localLogs.map(line => (
 						<div>{line}</div>
 					))}
+					{/* {
+						this.state.log.local.map(line => {
+							// console.log(this.state.log.local.length);
+							return <div>{line}</div>
+						})
+					} */}
 				</div>
 				<div>
 					<Subject color="red">Remote</Subject>
@@ -70,21 +80,24 @@ export default class Remonade extends Component {
 
 	async componentDidMount() {
 		const remoteMachine = new RemoteMachine(this.props.ssh);
-		const command = await remoteMachine.makeCommand();
-		command.stream.on('data', data => {
-			console.log(data.toString());
-		});
-		command.run(this.props.commands);
-
-		this.timer = setInterval(() => {
-			this.setState({
-				log: {
-					local: [...this.state.log.local, Math.random()],
-					remote: [...this.state.log.remote, Math.random()]
-				},
-				// i: this.state.i + 1
+		const commands = this.props.commands
+			.map(commandText => {
+				const command = new Command(commandText)
+				command.on('log', lines => {
+					const nextLog = Object.assign({}, this.state.log);
+					nextLog.local = [
+						...nextLog.local,
+						...lines
+					];
+					this.setState({
+						log: nextLog,
+						i: this.state.i + 1
+					});
+				});
+				return command;
 			});
-		}, 50000);
+
+		remoteMachine.runCommands(commands);
 	}
 
 	componentWillUnmount() {

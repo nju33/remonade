@@ -9,31 +9,19 @@ const {Client} = ssh;
 export default class RemoteMachine {
   constructor(sshConfig = {}) {
     this.sshConfig = sshConfig;
-    this.command = null;
+    this.commands = [];
   }
 
-  async makeCommand() {
-    const conn = new Client();
-    try {
-      const stream = await (() => {
-        return new Promise((resolve, reject) => {
-          conn.on('ready', () => {
-            conn.shell((err, stream) => {
-              if (err) {
-                console.log(err);
-                return reject(err);
-              }
-              return resolve(stream);
-            });
-          });
-          conn.connect(this.sshConfig);
-        });
-      })();
-
-      this.command = new Command(stream);
-      return this.command;
-    } catch (err) {
-      console.error(err);
-    }
+  async runCommands(commands = []) {
+    const results = await Promise.all(commands.map(command => {
+      const conn = new Client();
+      try {
+        command.run(conn, this.sshConfig);
+      } catch (err) {
+        console.error(err);
+      }
+    }));
+    this.commands = results;
+    return this.commands;
   }
 }

@@ -22,6 +22,7 @@ export default {
   commands: [
     'echo 1',
     'sleep 3',
+    // "cat <<HOME\naa\nasdfsa\nasdfasdf\nadsfas\ndfgsdfg\nasd\nHOME"
     'tsc --watch'
   ]
 };
