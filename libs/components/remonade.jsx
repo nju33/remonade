@@ -1,4 +1,7 @@
+import path from 'path';
 import {h, Component, Text} from 'ink';
+import Rsync from 'rsync';
+import chokidar from 'chokidar';
 import termSize from 'term-size';
 import Subject from 'components/subject';
 import RemoteMachine from 'helpers/remote-machine';
@@ -24,9 +27,6 @@ export default class Remonade extends Component {
 				return Array(this.state.rowLength - 3).fill('');
 			}
 
-			// if (this.state.log.local.length > 2) {
-			// 	console.log(this.state.log.local);
-			// }
 			const logs = Array.from(this.state.log.local)
 				.reverse()
 				.slice(0, this.state.rowLength - 3)
@@ -61,12 +61,6 @@ export default class Remonade extends Component {
 					{localLogs.map(line => (
 						<div>{line}</div>
 					))}
-					{/* {
-						this.state.log.local.map(line => {
-							// console.log(this.state.log.local.length);
-							return <div>{line}</div>
-						})
-					} */}
 				</div>
 				<div>
 					<Subject color="red">Remote</Subject>
@@ -79,6 +73,17 @@ export default class Remonade extends Component {
 	}
 
 	async componentDidMount() {
+		this.props.volumes.forEach(volume => {
+			chokidar.watch(volume.localPattern).on('all', (ev, path) => {
+				console.log(path);
+				const rsync = new Rsync()
+					.shell('ssh')
+					.flags('aznv')
+					.source(volume.localPath)
+					.destination(volume.remotePath);
+			});
+		});
+
 		const remoteMachine = new RemoteMachine(this.props.ssh);
 		const commands = this.props.commands
 			.map(commandText => {

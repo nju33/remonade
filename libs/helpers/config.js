@@ -15,5 +15,5 @@ export const viewSshIdentifyFile = conf => R.view(sshIdentifyFileLens, conf);
 const baseLocalLens = R.lensPath(['base', 'local']);
 export const viewBaseLocal = conf => R.view(baseLocalLens, conf);
 
-const baseRemoteLens  R.lensPath(['base', 'remote']);
+const baseRemoteLens = R.lensPath(['base', 'remote']);
 export const viewBaseRemote = conf => R.view(baseRemoteLens, conf);

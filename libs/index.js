@@ -15,42 +15,44 @@ import {
 } from 'helpers/config';
 
 
-function local(localPath) {
-	const Volume = new Volume(this.config)
-	return Volume.local(localPath);
+function local(volume, localPath) {
+	return volume.local(localPath);
 }
 
-function remote(remotePath) {
-	const Volume = new Volume(this.config)
-	return Volume.remote(remotePath);
+function remote(config, remotePath) {
+	return volume.remote(remotePath);
 }
 
 export default class Remonade extends EventEmitter {
 	static async adaptConfig (config = {}) {
+		const ssh = pProps({
+			host: viewSshHostname(config),
+			port: (viewSshPort(config) || 22),
+			username: viewSshUser(config),
+			identifyFile: viewSshIdentifyFile(config),
+			privateKey: (identifyFile => {
+				return promisify(fs.readFile)(identifyFile);
+			})(viewSshIdentifyFile(config))
+		});
+
 		const result = await pProps({
-			ssh: pProps({
-				host: viewSshHostname(config),
-				port: (viewSshPort(config) || 22),
-				username: viewSshUser(config),
-				privateKey: (identifyFile => {
-					return promisify(fs.readFile)(identifyFile);
-				})(viewSshIdentifyFile(config));
-			}),
-			base: {
-				local: viewBaseLocal(config) || new Volume(),
-				remote: viewBaseREmote(config) || new Volume()
-			},
+			ssh,
 			volumes: (volumes => {
 				if (volumes.length === 0) {
 					throw new Error('Set one or more config.volumes')
 				}
 				return volumes.map(volume => {
+					const currentVolume = new Volume(ssh, {
+						local: viewBaseLocal(config),
+						remote: viewBaseRemote(config)
+					});
+
 					if (typeof volume === 'function') {
-						return volume({local, remote});
+						return volume(currentVolume);
 					}
 					return volume;
 				})
-			})(config.volumes || [])
+			})(config.volumes || []),
 			commands: config.commands || []
 		});
 		return result;

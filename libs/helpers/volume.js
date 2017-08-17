@@ -1,21 +1,54 @@
+import path from 'path';
+
 export default class Volume {
-  constructor() {
-    // this.base = base;
-    // this.base.local = base.local || '/';
-    // this.base.remote = base.remote || '/';
-    this.local = null;
-    this.remote = null;
+  constructor(ssh, base = {local: '/', remote: '/'}) {
+    this._ssh = ssh;
+    this._base = base;
+    this._base.local = base.local || '/';
+    this._base.remote = base.remote || '/';
+    this._main = null;
+    this._label = null;
+    this._local = null;
+    this._remote = null;
+    this._beforeSyncCommands = null;
+    this._afterSyncCommands = null;
   }
 
-  base() {}
+  get localPath() {
+    return path.join(this.base.local, this.local || '');
+  }
 
-  local(_local) {
-    this.local = _local;
+  get localPattern() {
+    return path.join(this.base.local, this.local || '**/*');
+  }
+
+  get remotePath() {
+    return `${this._ssh.username}@${this._ssh.host}:` +
+           path.join(this.base.remote, this.remote || '') +
+           `-i ${this._ssh.identifyFile}`;
+  }
+
+  get remotePattern() {
+    return path.join(this.base.remote, this.remote || '**/*');
+  }
+
+  label(label) {
+    this._label = label;
+  }
+
+  local(local) {
+    this._local = local;
+    if (this._remote === null) {
+      this._main = 'local';
+    }
     return this;
   }
 
-  remote(_remote) {
-    this.remote = _remote;
+  remote(remote) {
+    this._remote = remote;
+    if (this._local === null) {
+      this._main = 'remote';
+    }
     return this;
   }
 
@@ -28,13 +61,15 @@ export default class Volume {
 
   beforeSync() {
     if (this.valid()) {
-      console.log(9);
+      this._beforeSyncCommands = commands;
     }
+    return this;
   }
 
-  afterSync() {
+  afterSync(commands) {
     if (this.valid()) {
-      console.log(1);
+      this._afterSyncCommands = commands;
     }
+    return this;
   }
 }

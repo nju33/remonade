@@ -9,13 +9,13 @@ export default {
     remote: '/home/ec2-user'
   },
   volumes: [
-    [
-      ({local}) => local`src/scripts`
-                     .remote`remote/scripts`
-                     .afterSync`tsc`,
-      ({remote}) => remote`remote/dist`
-                      .local`src/dist`
-    ]
+    volume => volume
+                .local`src/scripts`
+                .remote`remote/scripts`
+                .afterSync`tsc`,
+    volume => volume
+                .remote`remote/dist/**/*`
+                .local`src/dist/**/*`
     // {
     //   main: 'local',
     //   commands: [
