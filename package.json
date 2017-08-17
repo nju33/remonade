@@ -11,6 +11,10 @@
 	"moduleRoots": [
 		"libs"
 	],
+	"pkg": {
+		"scripts": "dist/**/*.js",
+		"___assets": "views/**/*"
+	},
 	"devDependencies": {
 		"babel-plugin-module-resolver": "^2.7.1",
 		"babel-plugin-transform-react-jsx": "^6.24.1",

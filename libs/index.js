@@ -4,18 +4,54 @@ import EventEmitter from 'events';
 import {h, render} from 'ink';
 import pProps from 'p-props';
 import RemonadeComponent from 'components/remonade';
+import Volume from 'helpers/volume';
+import {
+	viewSshHostname,
+	viewSshPort,
+	viewSshUser,
+	viewSshIdentifyFile,
+	viewBaseLocal,
+	viewBaseRemote
+} from 'helpers/config';
+
+
+function local(localPath) {
+	const Volume = new Volume(this.config)
+	return Volume.local(localPath);
+}
+
+function remote(remotePath) {
+	const Volume = new Volume(this.config)
+	return Volume.remote(remotePath);
+}
 
 export default class Remonade extends EventEmitter {
 	static async adaptConfig (config = {}) {
 		const result = await pProps({
 			ssh: pProps({
-				host: config.ssh.hostname,
-				port: (config.ssh.port || 22),
-				username: config.ssh.user,
-				privateKey: promisify(fs.readFile)(config.ssh.identifyFile)
+				host: viewSshHostname(config),
+				port: (viewSshPort(config) || 22),
+				username: viewSshUser(config),
+				privateKey: (identifyFile => {
+					return promisify(fs.readFile)(identifyFile);
+				})(viewSshIdentifyFile(config));
 			}),
-			commands: (config.commands || []),
-			volumes: (config.volumes || [])
+			base: {
+				local: viewBaseLocal(config) || new Volume(),
+				remote: viewBaseREmote(config) || new Volume()
+			},
+			volumes: (volumes => {
+				if (volumes.length === 0) {
+					throw new Error('Set one or more config.volumes')
+				}
+				return volumes.map(volume => {
+					if (typeof volume === 'function') {
+						return volume({local, remote});
+					}
+					return volume;
+				})
+			})(config.volumes || [])
+			commands: config.commands || []
 		});
 		return result;
 	}

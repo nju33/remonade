@@ -9,27 +9,34 @@ export default {
     remote: '/home/ec2-user'
   },
   volumes: [
-    {
-      main: 'local',
-      commands: [
-        'yarn tsc'
-      ],
-      local: 'src/scripts',
-      remote: 'remote/scripts'
-    },
-    {
-      main: 'remote'
-      remote: 'remote/scripts/**/*.js',
-      local: 'dist/'
-    }
-    {
-      main: 'local',
-      commands: [
-        'yarn gulp styles'
-      ],
-      local: 'src/styles',
-      remote: 'remote/styles'
-    }
+    [
+      ({local}) => local`src/scripts`
+                     .remote`remote/scripts`
+                     .afterSync`tsc`,
+      ({remote}) => remote`remote/dist`
+                      .local`src/dist`
+    ]
+    // {
+    //   main: 'local',
+    //   commands: [
+    //     'yarn tsc'
+    //   ],
+    //   local: 'src/scripts',
+    //   remote: 'remote/scripts'
+    // },
+    // {
+    //   main: 'remote'
+    //   remote: 'remote/scripts/**/*.js',
+    //   local: 'dist/'
+    // }
+    // {
+    //   main: 'local',
+    //   commands: [
+    //     'yarn gulp styles'
+    //   ],
+    //   local: 'src/styles',
+    //   remote: 'remote/styles'
+    // }
   ],
   commands: [
     'echo 1',
