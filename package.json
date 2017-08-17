@@ -3,6 +3,11 @@
 	"version": "1.0.0",
 	"main": "index.js",
 	"license": "MIT",
+	"scripts": {
+		"cli": "node -r babel-register libs/cli.js",
+		"example": "node -r babel-register examples/example.js",
+		"build": "gulp libs"
+	},
 	"moduleRoots": [
 		"libs"
 	],
@@ -10,7 +15,14 @@
 		"babel-plugin-module-resolver": "^2.7.1",
 		"babel-plugin-transform-react-jsx": "^6.24.1",
 		"babel-preset-env": "^1.6.0",
-		"babel-register": "^6.24.1"
+		"babel-register": "^6.24.1",
+		"beeper": "^1.1.1",
+		"gulp": "^3.9.1",
+		"gulp-babel": "^7.0.0",
+		"gulp-cached": "^1.1.1",
+		"gulp-plumber": "^1.1.0",
+		"gulp-sourcemaps": "^2.6.0",
+		"pretty-error": "^2.1.1"
 	},
 	"dependencies": {
 		"chokidar": "^1.7.0",
