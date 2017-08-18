@@ -6,16 +6,16 @@ export default {
   },
   base: {
     local: __dirname,
-    remote: '/home/ec2-user'
+    remote: '/home/ec2-user/remotes/remonade'
   },
   volumes: [
     volume => volume
-                .local`src/scripts`
-                .remote`remote/scripts`
+                .local`example/src`
+                .remote`remonade/src`
                 .afterSync`tsc`,
-    volume => volume
-                .remote`remote/dist/**/*`
-                .local`src/dist/**/*`
+    // volume => volume
+    //             .remote`remote/dist/**/*`
+    //             .local`src/dist/**/*`
     // {
     //   main: 'local',
     //   commands: [
