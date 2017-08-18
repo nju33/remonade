@@ -15,28 +15,29 @@ export default class Volume {
   }
 
   get localPath() {
-    return path.join(this.base.local, this.local || '');
+    return path.join(this._base.local, this._local || '');
   }
 
   get localPattern() {
-    return path.join(this.base.local, this.local || '**/*');
+    return path.join(this._base.local, this._local || '', '**/*');
   }
 
   get remotePath() {
+    console.log(this._ssh);
     return `${this._ssh.username}@${this._ssh.host}:` +
-           path.join(this.base.remote, this.remote || '') +
-           `-i ${this._ssh.identifyFile}`;
+           path.join(this._base.remote, this._remote || '') +
+           ` -i ${this._ssh.identifyFile}`;
   }
 
   get remotePattern() {
-    return path.join(this.base.remote, this.remote || '**/*');
+    return path.join(this._base.remote, this._remote || '', '**/*');
   }
 
-  label(label) {
+  label([label]) {
     this._label = label;
   }
 
-  local(local) {
+  local([local]) {
     this._local = local;
     if (this._remote === null) {
       this._main = 'local';
@@ -44,7 +45,7 @@ export default class Volume {
     return this;
   }
 
-  remote(remote) {
+  remote([remote]) {
     this._remote = remote;
     if (this._local === null) {
       this._main = 'remote';

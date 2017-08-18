@@ -73,36 +73,40 @@ export default class Remonade extends Component {
 	}
 
 	async componentDidMount() {
-		this.props.volumes.forEach(volume => {
-			chokidar.watch(volume.localPattern).on('all', (ev, path) => {
-				console.log(path);
-				const rsync = new Rsync()
-					.shell('ssh')
-					.flags('aznv')
-					.source(volume.localPath)
-					.destination(volume.remotePath);
-			});
-		});
-
-		const remoteMachine = new RemoteMachine(this.props.ssh);
-		const commands = this.props.commands
-			.map(commandText => {
-				const command = new Command(commandText)
-				command.on('log', lines => {
-					const nextLog = Object.assign({}, this.state.log);
-					nextLog.local = [
-						...nextLog.local,
-						...lines
-					];
-					this.setState({
-						log: nextLog,
-						i: this.state.i + 1
-					});
+	  this.props.volumes.forEach(volume => {
+			const watcher = chokidar.watch(volume.localPattern, {})
+			watcher
+				.on('all', (ev, path) => {
+					const rsync = new Rsync()
+						// .shell('ssh')
+						.flags('arnv')
+						.source(volume.localPath)
+						.destination(volume.remotePath)
+						.execute((err, code, cmd) => {
+							console.log(err, code, cmd);
+						});
 				});
-				return command;
-			});
-
-		remoteMachine.runCommands(commands);
+		});
+		//
+		// const remoteMachine = new RemoteMachine(this.props.ssh);
+		// const commands = this.props.commands
+		// 	.map(commandText => {
+		// 		const command = new Command(commandText)
+		// 		command.on('log', lines => {
+		// 			const nextLog = Object.assign({}, this.state.log);
+		// 			nextLog.local = [
+		// 				...nextLog.local,
+		// 				...lines
+		// 			];
+		// 			this.setState({
+		// 				log: nextLog,
+		// 				i: this.state.i + 1
+		// 			});
+		// 		});
+		// 		return command;
+		// 	});
+		//
+		// remoteMachine.runCommands(commands);
 	}
 
 	componentWillUnmount() {

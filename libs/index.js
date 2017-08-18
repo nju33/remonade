@@ -25,7 +25,7 @@ function remote(config, remotePath) {
 
 export default class Remonade extends EventEmitter {
 	static async adaptConfig (config = {}) {
-		const ssh = pProps({
+		const ssh = await pProps({
 			host: viewSshHostname(config),
 			port: (viewSshPort(config) || 22),
 			username: viewSshUser(config),
@@ -68,4 +68,4 @@ export default class Remonade extends EventEmitter {
 	}
 };
 
-// process.on('unhandledRejection', console.dir);
+process.on('unhandledRejection', console.dir);
