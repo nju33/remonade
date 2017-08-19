@@ -1,5 +1,7 @@
 import path from 'path';
 import {h, Component, Text} from 'ink';
+import R from 'ramda';
+import chunk from 'lodash.chunk';
 import chokidar from 'chokidar';
 import termSize from 'term-size';
 import execa from 'execa';
@@ -8,8 +10,6 @@ import RemoteMachine from 'helpers/remote-machine';
 import Command from 'helpers/command';
 import Cup from 'helpers/cup';
 import Rsync from 'helpers/rsync';
-
-const ADJUST_ROW_NUMBER = 5;
 
 export default class Remonade extends Component {
 	constructor(props) {
@@ -21,23 +21,30 @@ export default class Remonade extends Component {
 	}
 
 	render() {
-    const {rowLength, log} = this.props;
+    const {rowLength, colLength, log} = this.props;
 
 		const nextLog = (() => {
 			if (log.length === 0) {
-				return Array(rowLength - ADJUST_ROW_NUMBER).fill('');
+				return Array(rowLength).fill('');
 			}
 
-			const newLog = Array.from(log)
+			// console.log(Array.from(log).map(line => (
+			// 	chunk(line, colLength).map(group => group.join(''))
+			// )));
+			const newLog = R.flatten(
+				Array.from(log).map(line => (
+					chunk(line, colLength).map(group => group.join(''))
+				))
+			)
 				.reverse()
-				.slice(0, rowLength - ADJUST_ROW_NUMBER)
+				.slice(0, rowLength)
 				.reverse();
-			const filler = Array(rowLength - ADJUST_ROW_NUMBER).fill('');
+			const filler = Array(rowLength).fill('');
 
 			return [
 				...newLog,
 				...filler
-			].slice(0, rowLength - ADJUST_ROW_NUMBER);
+			].slice(0, rowLength);
 		})();
 
 		return (

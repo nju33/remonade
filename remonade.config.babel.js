@@ -12,7 +12,8 @@ export default {
     volume => volume
                 .local`examples/src/`
                 .remote`examples/src/`
-                .afterSync`tsc`,
+                .beforeSync`tsc/examples/src/*.ts --outDir dist --watch`
+                .afterSync`tsc examples/src/*.ts --outDir dist`,
     // volume => volume
     //             .remote`remote/dist/**/*`
     //             .local`src/dist/**/*`

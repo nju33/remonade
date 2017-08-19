@@ -11,19 +11,36 @@ export default class Command extends EventEmitter {
   run(conn, sshConfig) {
     return new Promise((resolve, reject) => {
       conn.on('ready', async () => {
-        const stack = [];
+        // const stack = [];
         try {
+          this.emit('run', this);
           const exec = conn.exec.bind(conn);
-          this.stream = await promisify(exec)(this.command);
-          this.stream.on('data', raw => {
-            stack.push(raw.toString().replace(/\s*$/, ''));
-            process.nextTick(() => {
-              if (stack.length > 2) {
-                this.emit('log', stack);
-                stack.length = 0;
-              }
+          this.stream = await promisify(exec)(`
+            (
+              cd remotes/remonade &&
+              ${this.command}
+            )
+          `);
+
+          this.stream
+            .on('end', () => {
+              return conn.end();
+              this.emit('end');
+            })
+            .on('data', data => {
+              this.emit('data', data);
+            })
+            .stderr.on('data', data => {
+              console.log(data.toString());
             });
-          })
+            // stack.push(raw.toString().replace(/\s*$/, ''));
+            // process.nextTick(() => {
+            //   if (stack.length > 2) {
+            //     this.emit('data', stack);
+            //     stack.length = 0;
+            //   }
+            // });
+          // });
           resolve(this.stream);
         } catch (err) {
           reject(err);

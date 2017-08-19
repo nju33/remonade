@@ -23,7 +23,7 @@ export default class Volume {
   }
 
   get remotePath() {
-    // console.log(this._ssh);
+    // console.log(this._ssh);w
     return `${this._ssh.username}@${this._ssh.host}:` +
            path.join(this._base.remote, this._remote || '');
           //  ` -i ${this._ssh.identifyFile}`;
@@ -60,11 +60,29 @@ export default class Volume {
     return true;
   }
 
-  beforeSync() {
+  get beforeSyncCommands() {
+    if (typeof this._beforeSyncCommands === 'string') {
+      return this._beforeSyncCommands.split('\n');
+    }
+    return this._beforeSyncCommands;
+  }
+
+  beforeSync(commands) {
     if (this.valid()) {
       this._beforeSyncCommands = commands;
     }
     return this;
+  }
+
+  hasAfterSync() {
+    return this._afterSyncCommands !== null;
+  }
+
+  get afterSyncCommands() {
+    if (typeof this._afterSyncCommands === 'string') {
+      return this._afterSyncCommands.split('\n');
+    }
+    return this._afterSyncCommands;
   }
 
   afterSync(commands) {
