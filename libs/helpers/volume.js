@@ -23,10 +23,10 @@ export default class Volume {
   }
 
   get remotePath() {
-    console.log(this._ssh);
+    // console.log(this._ssh);
     return `${this._ssh.username}@${this._ssh.host}:` +
-           path.join(this._base.remote, this._remote || '') +
-           ` -i ${this._ssh.identifyFile}`;
+           path.join(this._base.remote, this._remote || '');
+          //  ` -i ${this._ssh.identifyFile}`;
   }
 
   get remotePattern() {

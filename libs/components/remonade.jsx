@@ -1,11 +1,13 @@
 import path from 'path';
 import {h, Component, Text} from 'ink';
-import Rsync from 'rsync';
 import chokidar from 'chokidar';
 import termSize from 'term-size';
+import execa from 'execa';
 import Subject from 'components/subject';
 import RemoteMachine from 'helpers/remote-machine';
 import Command from 'helpers/command';
+import Cup from 'helpers/cup';
+import Rsync from 'helpers/rsync';
 
 export default class Remonade extends Component {
 	constructor(props) {
@@ -21,37 +23,49 @@ export default class Remonade extends Component {
 		};
 	}
 
+	updateLocalLog(chunk) {
+		process.nextTick(() => {
+			const nextLog = Object.assign({}, this.state.log);
+			nextLog.local.push(...chunk);
+			this.setState({log: nextLog})
+		});
+	}
+
+	updateRemoteLog() {
+
+	}
+
 	render() {
 		const localLogs = (() => {
 			if (this.state.log.local.length === 0) {
-				return Array(this.state.rowLength - 3).fill('');
+				return Array(this.state.rowLength - 5).fill('');
 			}
 
 			const logs = Array.from(this.state.log.local)
 				.reverse()
-				.slice(0, this.state.rowLength - 3)
+				.slice(0, this.state.rowLength - 5)
 				.reverse();
-			const filler = Array(this.state.rowLength - 3).fill('');
+			const filler = Array(this.state.rowLength - 5).fill('');
 			return [
 				...logs,
 				...filler
-			].slice(0, this.state.rowLength - 3);
+			].slice(0, this.state.rowLength - 5);
 		})();
 
 		const remoteLogs = (() => {
 			if (this.state.log.remote.length === 0) {
-				return Array(this.state.rowLength - 3).fill('');
+				return Array(this.state.rowLength - 5).fill('');
 			}
 
 			const logs = Array.from(this.state.log.remote)
 				.reverse()
-				.slice(0, this.state.rowLength - 3)
+				.slice(0, this.state.rowLength - 5)
 				.reverse();
-			const filler = Array(this.state.rowLength - 3).fill('');
+			const filler = Array(this.state.rowLength - 5).fill('');
 			return [
 				...logs,
 				...filler
-			].slice(0, this.state.rowLength - 3);
+			].slice(0, this.state.rowLength - 5);
 		})();
 
 		return (
@@ -75,16 +89,26 @@ export default class Remonade extends Component {
 	async componentDidMount() {
 	  this.props.volumes.forEach(volume => {
 			const watcher = chokidar.watch(volume.localPattern, {})
+			const rsync = new Rsync(volume, this.props.ssh);
+			const cup = new Cup(3);
 			watcher
-				.on('all', (ev, path) => {
-					const rsync = new Rsync()
-						// .shell('ssh')
-						.flags('arnv')
-						.source(volume.localPath)
-						.destination(volume.remotePath)
-						.execute((err, code, cmd) => {
-							console.log(err, code, cmd);
+				.on('change', (ev, path) => {
+					execa.shell(rsync.command).stdout
+						.on('data', line => {
+							const chunk = cup.pour(line.toString().split('\n'));
+							if (chunk.length === 0) {
+								return;
+							}
+							this.updateLocalLog(chunk);
+						})
+						.on('close', () => {
+							this.updateLocalLog(cup.data);
 						});
+						// .then(result => {
+						// 	const nextLog = Object.assign({}, this.state.log);
+						// 	nextLog.local.push([...result.stdout.split('\n')]);
+						// 	this.setState({log: nextLog})
+						// });
 				});
 		});
 		//

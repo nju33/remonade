@@ -10,8 +10,8 @@ export default {
   },
   volumes: [
     volume => volume
-                .local`examples/src`
-                .remote`examples/src`
+                .local`examples/src/`
+                .remote`examples/src/`
                 .afterSync`tsc`,
     // volume => volume
     //             .remote`remote/dist/**/*`
