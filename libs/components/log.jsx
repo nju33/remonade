@@ -20,39 +20,30 @@ export default class Remonade extends Component {
 		};
 	}
 
-	updateLocalLog(chunk) {
-		process.nextTick(() => {
-			const nextLog = Object.assign({}, this.state.log);
-			nextLog.local.push(...chunk);
-			this.setState({log: nextLog})
-		});
-	}
-
 	render() {
-    const {roLength, children: Children} = this.props;
+    const {rowLength, log} = this.props;
 
-		const log = (() => {
-			if (this.state.log.length === 0) {
+		const nextLog = (() => {
+			if (log.length === 0) {
 				return Array(rowLength - ADJUST_ROW_NUMBER).fill('');
 			}
 
-			const logs = Array.from(this.state.log)
+			const newLog = Array.from(log)
 				.reverse()
-				.slice(0, this.state.rowLength - ADJUST_ROW_NUMBER)
+				.slice(0, rowLength - ADJUST_ROW_NUMBER)
 				.reverse();
-			const filler = Array(this.state.rowLength - ADJUST_ROW_NUMBER).fill('');
+			const filler = Array(rowLength - ADJUST_ROW_NUMBER).fill('');
 
 			return [
-				...logs,
+				...newLog,
 				...filler
-			].slice(0, this.state.rowLength - ADJUST_ROW_NUMBER);
+			].slice(0, rowLength - ADJUST_ROW_NUMBER);
 		})();
 
 		return (
       <div>
-        <Children/>
         {
-          log.map(line => (
+          nextLog.map(line => (
             <div>{line}</div>
           ))
         }

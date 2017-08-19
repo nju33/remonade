@@ -4,6 +4,7 @@ import chokidar from 'chokidar';
 import termSize from 'term-size';
 import execa from 'execa';
 import Subject from 'components/subject';
+import Log from 'components/log';
 import RemoteMachine from 'helpers/remote-machine';
 import Command from 'helpers/command';
 import Cup from 'helpers/cup';
@@ -32,55 +33,29 @@ export default class Remonade extends Component {
 	}
 
 	updateRemoteLog() {
-
+		process.nextTick(() => {
+			const nextLog = Object.assign({}, this.state.log);
+			nextLog.remote.push(...chunk);
+			this.setState({log: nextLog})
+		});
 	}
 
 	render() {
-		const localLogs = (() => {
-			if (this.state.log.local.length === 0) {
-				return Array(this.state.rowLength - 5).fill('');
-			}
-
-			const logs = Array.from(this.state.log.local)
-				.reverse()
-				.slice(0, this.state.rowLength - 5)
-				.reverse();
-			const filler = Array(this.state.rowLength - 5).fill('');
-			return [
-				...logs,
-				...filler
-			].slice(0, this.state.rowLength - 5);
-		})();
-
-		const remoteLogs = (() => {
-			if (this.state.log.remote.length === 0) {
-				return Array(this.state.rowLength - 5).fill('');
-			}
-
-			const logs = Array.from(this.state.log.remote)
-				.reverse()
-				.slice(0, this.state.rowLength - 5)
-				.reverse();
-			const filler = Array(this.state.rowLength - 5).fill('');
-			return [
-				...logs,
-				...filler
-			].slice(0, this.state.rowLength - 5);
-		})();
-
 		return (
 			<div>
 				<div>
 					<Subject color="green">Local</Subject>
-					{localLogs.map(line => (
-						<div>{line}</div>
-					))}
+					<Log
+						rowLength={this.state.rowLength}
+						log={this.state.log.local}
+					/>
 				</div>
 				<div>
 					<Subject color="red">Remote</Subject>
-					{remoteLogs.map(line => (
-						<div>{line}</div>
-					))}
+					<Log
+						rowLength={this.state.rowLength}
+						log={this.state.log.remote}
+					/>
 				</div>
 			</div>
 		);
@@ -102,13 +77,8 @@ export default class Remonade extends Component {
 							this.updateLocalLog(chunk);
 						})
 						.on('close', () => {
-							this.updateLocalLog(cup.data);
+							this.updateLocalLog(cup.data)
 						});
-						// .then(result => {
-						// 	const nextLog = Object.assign({}, this.state.log);
-						// 	nextLog.local.push([...result.stdout.split('\n')]);
-						// 	this.setState({log: nextLog})
-						// });
 				});
 		});
 		//
