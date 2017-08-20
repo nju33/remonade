@@ -8,8 +8,15 @@ export default class Rsync {
       .shell(`ssh -i ${ssh.identifyFile}`)
       .flags('arv')
       .set('delete')
-      .source(volume.localPath)
-      .destination(volume.remotePath);
+    if (volume.main === 'local') {
+      this._rsync
+        .source(volume.localPath)
+        .destination(volume.remotePath);
+    } else if (volume.main === 'remote') {
+      this._rsync
+        .source(volume.remotePath)
+        .destination(volume.localPath);
+    }
   }
 
   get command() {

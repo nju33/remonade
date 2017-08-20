@@ -2,16 +2,20 @@ import path from 'path';
 
 export default class Volume {
   constructor(ssh, base = {local: '/', remote: '/'}) {
+    this.main = null;
     this._ssh = ssh;
     this._base = base;
     this._base.local = base.local || '/';
     this._base.remote = base.remote || '/';
-    this._main = null;
     this._label = null;
     this._local = null;
     this._remote = null;
     this._beforeSyncCommands = null;
+    this._beforeSyncOnceCommands = null;
     this._afterSyncCommands = null;
+    this._afterSyncOnceCommands = null;
+    this.executedBeforeSyncOnce = false;
+    this.executedAfterSyncOnce = false;
   }
 
   get localPath() {
@@ -23,10 +27,8 @@ export default class Volume {
   }
 
   get remotePath() {
-    // console.log(this._ssh);w
     return `${this._ssh.username}@${this._ssh.host}:` +
            path.join(this._base.remote, this._remote || '');
-          //  ` -i ${this._ssh.identifyFile}`;
   }
 
   get remotePattern() {
@@ -40,7 +42,7 @@ export default class Volume {
   local([local]) {
     this._local = local;
     if (this._remote === null) {
-      this._main = 'local';
+      this.main = 'local';
     }
     return this;
   }
@@ -48,7 +50,7 @@ export default class Volume {
   remote([remote]) {
     this._remote = remote;
     if (this._local === null) {
-      this._main = 'remote';
+      this.main = 'remote';
     }
     return this;
   }
@@ -58,6 +60,10 @@ export default class Volume {
       throw new Error('Specify local and remote path');
     }
     return true;
+  }
+
+  hasBeforeSync() {
+    return this._beforeSyncCommands !== null;
   }
 
   get beforeSyncCommands() {
@@ -70,6 +76,24 @@ export default class Volume {
   beforeSync(commands) {
     if (this.valid()) {
       this._beforeSyncCommands = commands;
+    }
+    return this;
+  }
+
+  hasBeforeSyncOnce() {
+    return this._beforeSyncOnceCommands !== null;
+  }
+
+  get beforeSyncOnceCommands() {
+    if (typeof this._beforeSyncOnceCommands === 'string') {
+      return this._beforeSyncOnceCommands.split('\n');
+    }
+    return this._beforeSyncOnceCommands;
+  }
+
+  beforeSyncOnce(commands) {
+    if (this.valid()) {
+      this._beforeSyncOnceCommands = commands;
     }
     return this;
   }
@@ -88,6 +112,24 @@ export default class Volume {
   afterSync(commands) {
     if (this.valid()) {
       this._afterSyncCommands = commands;
+    }
+    return this;
+  }
+
+  hasAfterSyncOnce() {
+    return this._afterSyncOnceCommands !== null;
+  }
+
+  get afterSyncOnceCommands() {
+    if (typeof this._afterSyncOnceCommands === 'string') {
+      return this._afterSyncOnceCommands.split('\n');
+    }
+    return this._afterSyncOnceCommands;
+  }
+
+  afterSyncOnce(commands) {
+    if (this.valid()) {
+      this._afterSyncOnceCommands = commands;
     }
     return this;
   }

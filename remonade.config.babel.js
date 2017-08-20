@@ -10,13 +10,13 @@ export default {
   },
   volumes: [
     volume => volume
+                .remote`dist/`
+                .local`dist/`,
+    volume => volume
                 .local`examples/src/`
                 .remote`examples/src/`
-                .beforeSync`tsc/examples/src/*.ts --outDir dist --watch`
-                .afterSync`tsc examples/src/*.ts --outDir dist`,
-    // volume => volume
-    //             .remote`remote/dist/**/*`
-    //             .local`src/dist/**/*`
+                .beforeSyncOnce`tsc examples/src/*.ts --outDir dist --watch`
+                // .afterSync`tsc examples/src/*.ts --outDir dist`,
     // {
     //   main: 'local',
     //   commands: [

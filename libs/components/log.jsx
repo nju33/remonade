@@ -10,6 +10,7 @@ import RemoteMachine from 'helpers/remote-machine';
 import Command from 'helpers/command';
 import Cup from 'helpers/cup';
 import Rsync from 'helpers/rsync';
+import colorLog from 'helpers/color-log';
 
 export default class Remonade extends Component {
 	constructor(props) {

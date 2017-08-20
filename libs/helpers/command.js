@@ -2,9 +2,10 @@ import {promisify} from 'util';
 import EventEmitter from 'events';
 
 export default class Command extends EventEmitter {
-  constructor(command) {
+  constructor(command, stderr = true) {
     super();
     this.command = command;
+    this.stderr = stderr;
     this.stream = null;
   }
 
@@ -27,12 +28,24 @@ export default class Command extends EventEmitter {
               return conn.end();
               this.emit('end');
             })
+            .on('close', () => {
+              return conn.end();
+              this.emit('close');
+            })
             .on('data', data => {
               this.emit('data', data);
-            })
-            .stderr.on('data', data => {
-              console.log(data.toString());
             });
+
+          if (this.stderr) {
+            this.stream.stderr.on('data', data => {
+              this.emit('data', data);
+              this.emit('err', data);
+            })
+          }
+            // .stderr.on('data', data => {
+            //   console.log(data.toString());
+            // });
+
             // stack.push(raw.toString().replace(/\s*$/, ''));
             // process.nextTick(() => {
             //   if (stack.length > 2) {

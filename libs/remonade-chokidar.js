@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import yargs from 'rargs';
+import yargs from 'yargs';
 import chokidar from 'chokidar';
 
 const flags = yargs
