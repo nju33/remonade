@@ -1,4 +1,5 @@
 import path from 'path';
+import R from 'ramda';
 
 export default class Volume {
   constructor(ssh, base = {local: '/', remote: '/'}) {
@@ -68,7 +69,7 @@ export default class Volume {
 
   get beforeSyncCommands() {
     if (typeof this._beforeSyncCommands === 'string') {
-      return this._beforeSyncCommands.split('\n');
+      return R.flatten(this._beforeSyncCommands.split('\n'));
     }
     return this._beforeSyncCommands;
   }
@@ -86,7 +87,7 @@ export default class Volume {
 
   get beforeSyncOnceCommands() {
     if (typeof this._beforeSyncOnceCommands === 'string') {
-      return this._beforeSyncOnceCommands.split('\n');
+      return R.flatten(this._beforeSyncOnceCommands.split('\n'));
     }
     return this._beforeSyncOnceCommands;
   }
@@ -104,7 +105,7 @@ export default class Volume {
 
   get afterSyncCommands() {
     if (typeof this._afterSyncCommands === 'string') {
-      return this._afterSyncCommands.split('\n');
+      return R.flatten(this._afterSyncCommands.split('\n'));
     }
     return this._afterSyncCommands;
   }
@@ -122,7 +123,7 @@ export default class Volume {
 
   get afterSyncOnceCommands() {
     if (typeof this._afterSyncOnceCommands === 'string') {
-      return this._afterSyncOnceCommands.split('\n');
+      return R.flatten(this._afterSyncOnceCommands.split('\n'));
     }
     return this._afterSyncOnceCommands;
   }

@@ -15,7 +15,12 @@ export default {
     volume => volume
                 .local`examples/src/`
                 .remote`examples/src/`
-                .beforeSyncOnce`tsc examples/src/*.ts --outDir dist --watch`
+                .beforeSync`
+                  (cd examples && yarn lint)
+                `
+                .beforeSyncOnce`
+                  (cd examples && yarn webpack)
+                `
                 // .afterSync`tsc examples/src/*.ts --outDir dist`,
     // {
     //   main: 'local',
