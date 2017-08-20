@@ -10,8 +10,8 @@ export default {
   },
   volumes: [
     volume => volume
-                .remote`dist/`
-                .local`dist/`,
+                .remote`examples/dist/`
+                .local`examples/dist/`,
     volume => volume
                 .local`examples/src/`
                 .remote`examples/src/`
@@ -19,7 +19,7 @@ export default {
                   (cd examples && yarn lint)
                 `
                 .beforeSyncOnce`
-                  (cd examples && yarn webpack)
+                  (cd examples && yarn dev)
                 `
                 // .afterSync`tsc examples/src/*.ts --outDir dist`,
     // {

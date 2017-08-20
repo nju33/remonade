@@ -5,3 +5,5 @@ import {c} from './c';
 a();
 b();
 c();
+
+console.log(12);

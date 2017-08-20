@@ -105,6 +105,8 @@ export default class Remonade extends Component {
 	async execRemoteSync(rsync, cup) {
 		this.updateRemoteLog([chalk.gray(`\$ ${rsync.command}`)]);
 
+		console.log(rsync);
+
 		return new Promise(resolve => {
 			execa.shell(rsync.command).stdout
 				.on('data', line => {
