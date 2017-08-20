@@ -6,30 +6,38 @@ export default {
   },
   base: {
     local: __dirname,
-    remote: '/home/ec2-user'
+    remote: '/home/ec2-user/remotes/remonade'
   },
   volumes: [
-    {
-      main: 'local',
-      commands: [
-        'yarn tsc'
-      ],
-      local: 'src/scripts',
-      remote: 'remote/scripts'
-    },
-    {
-      main: 'remote'
-      remote: 'remote/scripts/**/*.js',
-      local: 'dist/'
-    }
-    {
-      main: 'local',
-      commands: [
-        'yarn gulp styles'
-      ],
-      local: 'src/styles',
-      remote: 'remote/styles'
-    }
+    volume => volume
+                .remote`dist/`
+                .local`dist/`,
+    volume => volume
+                .local`examples/src/`
+                .remote`examples/src/`
+                .beforeSyncOnce`tsc examples/src/*.ts --outDir dist --watch`
+                // .afterSync`tsc examples/src/*.ts --outDir dist`,
+    // {
+    //   main: 'local',
+    //   commands: [
+    //     'yarn tsc'
+    //   ],
+    //   local: 'src/scripts',
+    //   remote: 'remote/scripts'
+    // },
+    // {
+    //   main: 'remote'
+    //   remote: 'remote/scripts/**/*.js',
+    //   local: 'dist/'
+    // }
+    // {
+    //   main: 'local',
+    //   commands: [
+    //     'yarn gulp styles'
+    //   ],
+    //   local: 'src/styles',
+    //   remote: 'remote/styles'
+    // }
   ],
   commands: [
     'echo 1',
