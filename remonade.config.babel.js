@@ -1,7 +1,7 @@
 export default {
   ssh: {
     hostname: '54.64.238.197',
-    user: 'ec2-user',
+    user: 'remonade',
     identifyFile: process.env.HOME + '/.ssh/ec2_id'
   },
   base: {
@@ -16,10 +16,10 @@ export default {
                 .local`examples/src/`
                 .remote`examples/src/`
                 .beforeSync`
-                  (cd examples && yarn lint)
+                  (cd examples && node /home/ec2-user/remotes/remonade/examples/node_modules/tslint)
                 `
                 .beforeSyncOnce`
-                  (cd examples && yarn dev)
+                  (cd examples && node /home/ec2-user/remotes/remonade/examples/node_modules/.bin/webpack -w)
                 `
                 // .afterSync`tsc examples/src/*.ts --outDir dist`,
     // {

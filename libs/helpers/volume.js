@@ -1,6 +1,6 @@
 import path from 'path';
 import R from 'ramda';
-import trimMap from 'helpers/trim-map';
+import commandsFlatten from 'helpers/commands-flatten';
 
 export default class Volume {
   constructor(ssh, base = {local: '/', remote: '/'}) {
@@ -70,12 +70,9 @@ export default class Volume {
 
   get beforeSyncCommands() {
     if (typeof this._beforeSyncCommands === 'string') {
-      return R.pipe(
-        R.flatten,
-        trimMap
-      )(this._beforeSyncCommands.split('\n'));
+      return commandsFlatten(this._beforeSyncCommands.split('\n'));
     }
-    return this._beforeSyncCommands;
+    return commandsFlatten(this._beforeSyncCommands);
   }
 
   beforeSync(commands) {
@@ -91,12 +88,9 @@ export default class Volume {
 
   get beforeSyncOnceCommands() {
     if (typeof this._beforeSyncOnceCommands === 'string') {
-      return R.pipe(
-        R.flatten,
-        trimMap
-      )(this._beforeSyncOnceCommands.split('\n'));
+      return commandsFlatten(this._beforeSyncOnceCommands.split('\n'));
     }
-    return this._beforeSyncOnceCommands;
+    return commandsFlatten(this._beforeSyncOnceCommands);
   }
 
   beforeSyncOnce(commands) {
@@ -112,12 +106,9 @@ export default class Volume {
 
   get afterSyncCommands() {
     if (typeof this._afterSyncCommands === 'string') {
-      return R.pipe(
-        R.flatten,
-        trimMap
-      )(this._afterSyncCommands.split('\n'));
+      return commandsFlatten(this._afterSyncCommands.split('\n'));
     }
-    return this._afterSyncCommands;
+    return commandsFlatten(this._afterSyncCommands);
   }
 
   afterSync(commands) {
@@ -133,12 +124,9 @@ export default class Volume {
 
   get afterSyncOnceCommands() {
     if (typeof this._afterSyncOnceCommands === 'string') {
-      return R.pipe(
-        R.flatten,
-        trimMap
-      )(this._afterSyncOnceCommands.split('\n'));
+      return commandsFlatten(this._afterSyncOnceCommands.split('\n'));
     }
-    return this._afterSyncOnceCommands;
+    return commandsFlatten(this._afterSyncOnceCommands);
   }
 
   afterSyncOnce(commands) {
