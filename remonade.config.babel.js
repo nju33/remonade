@@ -1,26 +1,60 @@
 export default {
-  ssh: {
-    hostname: '54.64.238.197',
-    user: 'remonade',
-    identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
-  },
-  base: {
-    local: __dirname,
-    remote: '/home/remonade/remonade'
-  },
+  // base: __dirname,
+  remotes: [
+    {
+      label: 'typescript',
+      base: '/home/remonade/remonade',
+      ssh: {
+        hostname: '54.64.238.197',
+        user: 'remonade',
+        identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
+      }
+    },
+    // {
+    //   label: 'gulp',
+    //   base: '/home/remonade/remonade',
+    //   ssh: {
+    //     hostname: '54.64.238.197',
+    //     user: 'remonade',
+    //     identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
+    //   }
+    // }
+  ]
+  // ssh: {
+  //   hostname: '54.64.238.197',
+  //   user: 'remonade',
+  //   identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
+  // },
+  // base: {
+  //   local: __dirname,
+  //   remote: '/home/remonade/remonade'
+  // },
   volumes: [
     volume => volume
-                .remote`examples/dist/`
-                .local`examples/dist/`,
+                .webpack`examples/dist/scripts`
+                .local`examples/dist/scripts`,
+    // volume => volume
+    //             .gulp`examples/dist/styles`
+    //             .local`examples/dist/styles`,
     volume => volume
-                .local`examples/src/`
-                .remote`examples/src/`
+                .local`examples/src/scripts`
+                .webpack`examples/src/scripts`
                 .beforeSync`
-                  (cd examples && node /home/remonade/remonade/examples/node_modules/tslint)
+                  (
+                    cd examples &&
+                    yarn lint
+                  )
                 `
+                  .onClose(() => console.log('end'))
+                  .onError((err, {beeper, notify}) => beeper(2))
+                  .end()
                 .beforeSyncOnce`
-                  (cd examples && node /home/remonade/remonade/examples/node_modules/.bin/webpack -w)
+                  (
+                    cd examples &&
+                    yarn dev
+                  )
                 `
+                  .onError((err, {beeper, notify}) => beeper(2))
                 // .afterSync`tsc examples/src/*.ts --outDir dist`,
     // {
     //   main: 'local',
