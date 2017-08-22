@@ -53,6 +53,7 @@ export default class Remonade extends EventEmitter {
 					return volume;
 				})
 			})(config.volumes || []),
+			base: config.base || {},
 			commands: config.commands || []
 		});
 		return result;

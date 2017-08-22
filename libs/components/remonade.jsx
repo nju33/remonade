@@ -53,12 +53,7 @@ export default class Remonade extends Component {
 	}
 
 	beforeExit(cb, remoteMachine, command) {
-		const killCommand = new Command([
-			'ps aux',
-			`grep '${command.command}'`,
-			'cut -d " " -f 2',
-			'xargs -n 9999 kill -9'
-		].join(' | '), false);
+		const killCommand = new Command('kill -9 -1', false);
 		killCommand.on('end', cb);
 		remoteMachine.runCommands([killCommand]);
 	}
@@ -216,6 +211,7 @@ export default class Remonade extends Component {
 
 		const handleData = debounce(line => {
 			switch (line.toString().trim()) {
+				case 'ADD':
 				case 'CHANGED': {
 					this.execRemoteSync(rsync, cup);
 				}
@@ -233,7 +229,10 @@ export default class Remonade extends Component {
 	}
 
 	async componentDidMount() {
-		const remoteMachine = new RemoteMachine(this.props.ssh);
+		const remoteMachine = new RemoteMachine(
+			this.props.ssh,
+			this.props.base.remote
+		);
 
 	  this.props.volumes.forEach(volume => {
 			const rsync = new Rsync(volume, this.props.ssh);

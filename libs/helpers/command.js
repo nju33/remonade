@@ -9,7 +9,7 @@ export default class Command extends EventEmitter {
     this.stream = null;
   }
 
-  run(conn, sshConfig) {
+  run(conn, sshConfig, base) {
     return new Promise((resolve, reject) => {
       conn.on('ready', async () => {
         // const stack = [];
@@ -18,7 +18,7 @@ export default class Command extends EventEmitter {
           const exec = conn.exec.bind(conn);
           this.stream = await promisify(exec)(`
             (
-              cd remotes/remonade &&
+              cd ${base} &&
               ${this.command}
             )
           `);

@@ -2,11 +2,11 @@ export default {
   ssh: {
     hostname: '54.64.238.197',
     user: 'remonade',
-    identifyFile: process.env.HOME + '/.ssh/ec2_id'
+    identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
   },
   base: {
     local: __dirname,
-    remote: '/home/ec2-user/remotes/remonade'
+    remote: '/home/remonade/remonade'
   },
   volumes: [
     volume => volume
@@ -16,10 +16,10 @@ export default {
                 .local`examples/src/`
                 .remote`examples/src/`
                 .beforeSync`
-                  (cd examples && node /home/ec2-user/remotes/remonade/examples/node_modules/tslint)
+                  (cd examples && node /home/remonade/remonade/examples/node_modules/tslint)
                 `
                 .beforeSyncOnce`
-                  (cd examples && node /home/ec2-user/remotes/remonade/examples/node_modules/.bin/webpack -w)
+                  (cd examples && node /home/remonade/remonade/examples/node_modules/.bin/webpack -w)
                 `
                 // .afterSync`tsc examples/src/*.ts --outDir dist`,
     // {
