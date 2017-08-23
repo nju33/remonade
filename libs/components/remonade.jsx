@@ -14,15 +14,17 @@ import Command from 'helpers/command';
 import Cup from 'helpers/cup';
 import Rsync from 'helpers/rsync';
 
-const ADJUST_ROW_NUMBER = 4;
+// const ADJUST_ROW_NUMBER = 4;
 
 export default class Remonade extends Component {
   constructor(props) {
     super(props);
 
     const termSizeData = termSize();
+    const remoteLength = props.remotes.length;
     this.state = {
-      rowLength: Math.floor((termSizeData.rows / 2) - ADJUST_ROW_NUMBER),
+      // rowLength: Math.floor((termSizeData.rows / 2) - ADJUST_ROW_NUMBER),
+      rowLength: Math.floor((termSizeData.rows / 2) - remoteLength),
       colLength: termSizeData.columns,
       log: {
         local: [],
