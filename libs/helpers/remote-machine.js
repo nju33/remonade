@@ -7,11 +7,17 @@ import Command from 'helpers/command';
 const {Client} = ssh;
 
 export default class RemoteMachine {
-  constructor(sshConfig, remoteBase) {
-    this._sshConfig = sshConfig;
-    this._remoteBase = remoteBase
-    this._commands = [];
+  constructor(remoteConfig) {
+    const {base, ssh} = remoteConfig;
+    this.base = base;
+    this.ssh = ssh;
   }
+
+  // constructor(sshConfig, remoteBase) {
+  //   this._sshConfig = sshConfig;
+  //   this._remoteBase = remoteBase
+  //   this._commands = [];
+  // }
 
   async runCommands(commands = []) {
     const results = await Promise.all(commands.map(command => {

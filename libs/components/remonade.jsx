@@ -218,12 +218,25 @@ export default class Remonade extends Component {
   }
 
   async componentDidMount() {
-    const remoteMachine = new RemoteMachine(
-      this.props.ssh,
-      this.props.base.remote
-    );
+    const {remotes, volumes} = this.props;
+    const remoteMachines = remotes.map(remote => new RemoteMachine(remote));
+
+    remoteMachines.forEach(rm => {
+      const target = volumes.find(v => v.remoteLabel === rm.label);
+      if (target === -1) {
+        throw new Error('err');
+      }
+    });
+    // const remoteMachine = new RemoteMachine(
+    //   this.props.ssh,
+    //   this.props.base.remote
+    // );
 
     this.props.volumes.forEach(volume => {
+      //
+      // volume.type =
+      //
+
       const rsync = new Rsync(volume, this.props.ssh);
       const cup = new Cup(3);
 
