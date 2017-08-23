@@ -22,6 +22,7 @@
 	"devDependencies": {
 		"babel-eslint": "^7.2.3",
 		"babel-plugin-module-resolver": "^2.7.1",
+		"babel-plugin-transform-decorators-legacy": "^1.3.4",
 		"babel-plugin-transform-object-rest-spread": "^6.26.0",
 		"babel-plugin-transform-react-jsx": "^6.24.1",
 		"babel-preset-env": "^1.6.0",
@@ -48,6 +49,7 @@
 		"ink": "^0.3.1",
 		"interpret": "^1.0.3",
 		"liftoff": "^2.3.0",
+		"lodash-decorators": "^4.4.1",
 		"lodash.chunk": "^4.2.0",
 		"lodash.debounce": "^4.0.8",
 		"minimist": "^1.2.0",

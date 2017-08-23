@@ -4,7 +4,7 @@ import CommandEffect from 'helpers/command-effect';
 import commandsFlatten from 'helpers/commands-flatten';
 
 export default class Volume {
-  constructor(ssh, base = {local: '/', remote: '/'}) {
+  constructor() {
     // this.main = null;
     // this._ssh = ssh;
     // this._base = base;
@@ -20,7 +20,10 @@ export default class Volume {
     // this.executedBeforeSyncOnce = false;
     // this.executedAfterSyncOnce = false;
 
-    this._remote = '';
+    this.fromLabel = '';
+    this.toLabel = '';
+    this.remoteLabel = '';
+    this.remoteMachine = null;
     this.command = {
       beforeOnce: null,
       before: null,
@@ -64,7 +67,6 @@ export default class Volume {
   effectForBefore() {
     const effect = new CommandEffect(this);
     this.commandEffect.before = effect;
-    console.log(effect);
     return effect;
   }
 
@@ -122,12 +124,16 @@ export default class Volume {
 
   addTemplateLiteral(label) {
     this[label] = ([_path]) => {
-      if (label !== 'local' && this._remote !== '') {
-        throw new Error(`Already set up remote to ${this._remote}`);
+      if (label !== 'local' && this.remoteLabel !== '') {
+        throw new Error(`Already set up remote to ${this.toLabel}`);
+      } else if (label !== 'local' && this.remoteLabel === '') {
+        this.remoteLabel = label;
       }
 
-      if (label !== 'local') {
-        this._remote = label;
+      if (this.fromLabel === '') {
+        this.fromLabel = label;
+      } else if (this.toLabel === '') {
+        this.toLabel = label;
       }
 
       this.path[label] = path.join(this.base[label], (_path || ''));

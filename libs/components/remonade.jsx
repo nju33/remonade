@@ -55,11 +55,11 @@ export default class Remonade extends Component {
     });
   }
 
-  beforeExit(cb, remoteMachine, command) {
-    const killCommand = new Command('kill -9 -1', false);
-    killCommand.on('end', cb);
-    remoteMachine.runCommands([killCommand]);
-  }
+  // beforeExit(cb, remoteMachine, command) {
+  //   const killCommand = new Command('kill -9 -1', false);
+  //   killCommand.on('end', cb);
+  //   remoteMachine.runCommands([killCommand]);
+  // }
 
   render() {
     return (
@@ -118,78 +118,70 @@ export default class Remonade extends Component {
     });
   }
 
-  runCommands(hookCommands, remoteMachine, cup) {
-    return new Promise((resolve, reject) => {
-      const commands = hookCommands.map(line => {
-        const command = new Command(line);
-        command
-          .on('run', runner => {
-            this.updateRemoteLog([chalk.gray(`$ ${runner.command}`)]);
+  // runCommands(hookCommands, remoteMachine, cup) {
+  //   return new Promise((resolve, reject) => {
+  //     const commands = hookCommands.map(line => {
+  //       const command = new Command(line);
+  //       command
+  //         .on('run', runner => {
+  //           this.updateRemoteLog([chalk.gray(`$ ${runner.command}`)]);
+  //
+  //           process.nextTick(resolve);
+  //         })
+  //         .on('data', line => {
+  //           const chunk = cup.pour(line.toString().split('\n'));
+  //           if (chunk.lenght === 0) {
+  //             return;
+  //           }
+  //           this.updateRemoteLog(chunk);
+  //         })
+  //         .on('error', line => {
+  //           const chunk = cup.pour(line.toString().split('\n'));
+  //           if (chunk.lenght === 0) {
+  //             return;
+  //           }
+  //           this.updateRemoteLog(chunk);
+  //
+  //           process.nextTick(reject);
+  //         });
+  //
+  //       exitHook(cb => {
+  //         this.beforeExit(cb, remoteMachine, command);
+  //       });
+  //       return command;
+  //     });
+  //     remoteMachine.runCommands(commands);
+  //   });
+  // }
 
-            process.nextTick(resolve);
-          })
-          .on('data', line => {
-            const chunk = cup.pour(line.toString().split('\n'));
-            if (chunk.lenght === 0) {
-              return;
-            }
-            this.updateRemoteLog(chunk);
-          })
-          .on('error', line => {
-            const chunk = cup.pour(line.toString().split('\n'));
-            if (chunk.lenght === 0) {
-              return;
-            }
-            this.updateRemoteLog(chunk);
-
-            process.nextTick(reject);
-          });
-
-        exitHook(cb => {
-          this.beforeExit(cb, remoteMachine, command);
-        });
-        return command;
-      });
-      remoteMachine.runCommands(commands);
-    });
-  }
-
-  handleLocal(volume, remoteMachine, rsync, cup) {
+  handleLocal(volume, rsync, cup) {
     const watcher = chokidar.watch(volume.localPattern, {});
     const handle = async () => {
-      if (volume.hasBeforeSync()) {
-        await this.runCommands(volume.beforeSyncCommands, remoteMachine, cup);
+      if (volume.hasBeforeCommand()) {
+        await volume.runBeforeCommand();
       }
 
-      if (volume.hasBeforeSyncOnce() && !volume.executedBeforeSyncOnce) {
-        await this.runCommands(
-          volume.beforeSyncOnceCommands,
-          remoteMachine,
-          cup
-        );
-        volume.executedBeforeSyncOnce = true;
+      if (volume.hasBeforeOnceCommand() && !volume.executedBeforeSyncOnce) {
+        await volume.runBeforeOnceCommand();
+        volume.executedBeforeOnce = true;
       }
 
       await this.execLocalSync(rsync, cup);
 
-      if (volume.hasAfterSync()) {
-        await this.runCommands(volume.afterSyncCommands, remoteMachine, cup);
+      if (volume.hasAfterCommand()) {
+        await volume.runAfterCommand();
       }
 
-      if (volume.hasAfterSyncOnce() && !volume.executedAfterSyncOnce) {
-        await this.runCommands(
-          volume.afterSyncOnceCommands,
-          remoteMachine,
-          cup
-        );
-        volume.executedAfterSyncOnce = true;
+      if (volume.hasAfterOnceCommand() && !volume.executedAfterSyncOnce) {
+        await volume.runAfterOnceCommand();
+        volume.executedAfterOnce = true;
       }
     };
 
     watcher.on('ready', handle).on('change', handle);
   }
 
-  handleRemote(volume, remoteMachine, rsync, cup) {
+  handleRemote(volume, rsync, cup) {
     const watcher = new Command(
       `node dist/remonade-chokidar.js --pattern '${volume.remotePattern}'`
     );
@@ -210,7 +202,7 @@ export default class Remonade extends Component {
     // watcher.on('end', () => {
     //   console.log('end');
     // });
-    remoteMachine.runCommands([watcher]);
+    volume.remoteMachine.runCommands([watcher]);
 
     exitHook(cb => {
       this.beforeExit(cb, remoteMachine, watcher);
@@ -219,14 +211,29 @@ export default class Remonade extends Component {
 
   async componentDidMount() {
     const {remotes, volumes} = this.props;
-    const remoteMachines = remotes.map(remote => new RemoteMachine(remote));
+    // const remoteMachines = remotes.map(remote => new RemoteMachine(remote));
 
-    remoteMachines.forEach(rm => {
-      const target = volumes.find(v => v.remoteLabel === rm.label);
-      if (target === -1) {
-        throw new Error('err');
+    remotes
+      .map(remote => new RemoteMachine(remote))
+      .forEach(remoteMachine => {
+        const target = volumes.find(v => v.remoteLabel === remoteMachine.label);
+        if (typeof target === 'undefined') {
+          throw new Error('err');
+        }
+        target.remoteMachine = remoteMachine;
+      });
+
+    volumes.forEach(volume => {
+      const rsync = new Rsync(volume);
+      const cup = new Cup(3);
+      if (volume.fromLabel === 'local') {
+        this.handleLocal(volume, rsync, cup);
+      } else {
+        this.handleRemote(volume, rsync, cup);
       }
     });
+
+    // console.log(volumes);
     // const remoteMachine = new RemoteMachine(
     //   this.props.ssh,
     //   this.props.base.remote

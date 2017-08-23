@@ -1,65 +1,67 @@
 import {promisify} from 'util';
 import EventEmitter from 'events';
+import ssh from 'ssh2';
+import bind from 'lodash-decorators/bind';
+
+const {Client} = ssh;
+
 
 export default class Command extends EventEmitter {
   constructor(command, stderr = true) {
     super();
     this.command = command;
     this.stderr = stderr;
-    this.stream = null;
+    // this.stream = null;
   }
 
-  run(conn, sshConfig, base) {
+  @bind()
+  _handleEnd() {
+    conn.end();
+    this.emit('end');
+  }
+
+  @bind()
+  _handleClose() {
+    conn.end();
+    this.emit('close');
+  }
+
+  @bind()
+  _handleData(data) {
+    this.emit('data', data);
+  }
+
+  @bind()
+  _handleErrorData(data) {
+    this.emit('error', data);
+  }
+
+  run(machine) {
+    const conn = new Client();
+
     return new Promise((resolve, reject) => {
       conn.on('ready', async () => {
-        // const stack = [];
+        this.emit('run', this);
+        const exec = conn.exec.bind(conn);
         try {
-          this.emit('run', this);
-          const exec = conn.exec.bind(conn);
-          this.stream = await promisify(exec)(`
+          const stream = await promisify(exec)(`
             (
-              cd ${base} &&
+              cd ${volume.base.remote} &&
               ${this.command}
             )
           `);
 
-          this.stream
-            .on('end', () => {
-              return conn.end();
-              this.emit('end');
-            })
-            .on('close', () => {
-              return conn.end();
-              this.emit('close');
-            })
-            .on('data', data => {
-              this.emit('data', data);
-            });
-
-          if (this.stderr) {
-            this.stream.stderr.on('data', data => {
-              this.emit('data', data);
-              this.emit('err', data);
-            })
-          }
-            // .stderr.on('data', data => {
-            //   console.log(data.toString());
-            // });
-
-            // stack.push(raw.toString().replace(/\s*$/, ''));
-            // process.nextTick(() => {
-            //   if (stack.length > 2) {
-            //     this.emit('data', stack);
-            //     stack.length = 0;
-            //   }
-            // });
-          // });
-          resolve(this.stream);
+          stream
+            .on('end', this._handleEnd)
+            .on('close', this._handleClose)
+            .on('data', this._handleData)
+            .stderr.on('data', this.stderr ? this._handleErrorData : () => {});
+          resolve(stream);
         } catch (err) {
           reject(err);
         }
       });
-      conn.connect(sshConfig);
+      conn.connect(machine.ssh);
     });
   }
 }
