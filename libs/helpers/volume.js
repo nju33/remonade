@@ -1,5 +1,6 @@
 import path from 'path';
 import R from 'ramda';
+import CommandEffect from 'helpers/command-effect';
 import commandsFlatten from 'helpers/commands-flatten';
 
 export default class Volume {
@@ -26,6 +27,12 @@ export default class Volume {
       afterOnce: null,
       after: null
     };
+    this.commandEffect = {
+      beforeOnce: null,
+      before: null,
+      afterOnce: null,
+      after: null
+    };
     this.base = {};
     this.path = {};
     this.pattern = {};
@@ -35,15 +42,30 @@ export default class Volume {
     return Boolean(this.comamnd.beforeOnce);
   }
 
+  effectForBeforeOnce() {
+    const effect = new CommandEffect(this);
+    this.commandEffect.beforeOnce = effect;
+    return effect;
+  }
+
   beforeOnce([command]) {
     if (!this.valid()) {
       throw new Error('Local or remote path setting is not yet');
     }
     this.command.beforeOnce = command;
+    this.effect = this.effectForBeforeOnce;
+    return this;
   }
 
   hasBeforeCommand() {
     return Boolean(this.comamnd.before);
+  }
+
+  effectForBefore() {
+    const effect = new CommandEffect(this);
+    this.commandEffect.before = effect;
+    console.log(effect);
+    return effect;
   }
 
   before([command]) {
@@ -51,10 +73,18 @@ export default class Volume {
       throw new Error('Local or remote path setting is not yet');
     }
     this.command.before = command;
+    this.effect = this.effectForBefore;
+    return this;
   }
 
   hasAfterOnceCommand() {
     return Boolean(this.comamnd.afterOnce);
+  }
+
+  effectForAfterOnce() {
+    const effect = new CommandEffect(this);
+    this.commandEffect.afterOnce = effect;
+    return effect;
   }
 
   afterOnce([command]) {
@@ -62,10 +92,18 @@ export default class Volume {
       throw new Error('Local or remote path setting is not yet');
     }
     this.command.afterOnce = command;
+    this.effect = this.effectForAfterOnce;
+    return this;
   }
 
   hasAfterCommand() {
     return Boolean(this.comamnd.after);
+  }
+
+  effectForAfter() {
+    const effect = new CommandEffect(this);
+    this.commandEffect.after = effect;
+    return effect;
   }
 
   after([command]) {
@@ -73,6 +111,8 @@ export default class Volume {
       throw new Error('Local or remote path setting is not yet');
     }
     this.command.after = command;
+    this.effect = this.effectForAfter;
+    return this;
   }
 
   set(label, base) {
@@ -81,14 +121,18 @@ export default class Volume {
   }
 
   addTemplateLiteral(label) {
-    this[label] = ([path]) => {
-      if (this._remote !== '') {
-        throw new Error(`Already set up remote to ${this._remote}`)
+    this[label] = ([_path]) => {
+      if (label !== 'local' && this._remote !== '') {
+        throw new Error(`Already set up remote to ${this._remote}`);
       }
 
-      this._remote = label;
-      this.path[label] = path.join(this.base[label], (path || ''));
+      if (label !== 'local') {
+        this._remote = label;
+      }
+
+      this.path[label] = path.join(this.base[label], (_path || ''));
       this.pattern[label] = path.join(this.path[label], '**/*');
+      return this;
     };
   }
 

@@ -7,7 +7,7 @@ export default class Rsync {
     this._rsync = new RsyncPkg()
       .shell(`ssh -i ${ssh.identifyFile}`)
       .flags('arv')
-      .set('delete')
+      .set('delete');
     if (volume.main === 'local') {
       this._rsync
         .source(volume.localPath)

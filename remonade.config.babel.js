@@ -19,7 +19,7 @@ export default {
     //     identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
     //   }
     // }
-  ]
+  ],
   // ssh: {
   //   hostname: '54.64.238.197',
   //   user: 'remonade',
@@ -30,30 +30,35 @@ export default {
   //   remote: '/home/remonade/remonade'
   // },
   volumes: [
-    volume => volume
-                .webpack`examples/dist/scripts`
-                .local`examples/dist/scripts`,
+    volume => {
+      console.log(volume);
+      return volume
+        .typescript`examples/dist/scripts`
+        .local`examples/dist/scripts`;
+    },
     // volume => volume
     //             .gulp`examples/dist/styles`
     //             .local`examples/dist/styles`,
     volume => volume
                 .local`examples/src/scripts`
-                .webpack`examples/src/scripts`
-                .beforeSync`
+                .typescript`examples/src/scripts`
+                .before`
                   (
                     cd examples &&
                     yarn lint
                   )
                 `
+                  .effect()
                   .onClose(() => console.log('end'))
                   .onError((err, {beeper, notify}) => beeper(2))
                   .end()
-                .beforeSyncOnce`
+                .beforeOnce`
                   (
                     cd examples &&
                     yarn dev
                   )
                 `
+                  .effect()
                   .onError((err, {beeper, notify}) => beeper(2))
                 // .afterSync`tsc examples/src/*.ts --outDir dist`,
     // {

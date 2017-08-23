@@ -18,7 +18,7 @@ cli.launch({
   cwd: argv.cwd,
   configPath: argv.gulpfile,
   require: argv.require,
-  completion: argv.completion,
+  completion: argv.completion
 }, async env => {
   const config = await (async config => {
     let result = null;

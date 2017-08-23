@@ -1,0 +1,12 @@
+{
+  "extends": ["xo/esnext", "xo-react/space"],
+  "settings": {
+    "react": {
+      "pragma": "h"
+    }
+  },
+  "rules": {
+    "indent": ["error", 2],
+    "capitalized-comments": ["error", "never"]
+  }
+}
