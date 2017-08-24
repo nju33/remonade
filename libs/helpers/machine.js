@@ -9,6 +9,11 @@ export default class Machine {
   base: string;
   ssh: ?Ssh;
 
+  static type = {
+    Local: 'Local',
+    Remote: 'Remote'
+  };
+
   constructor(config: MachineConfig) {
     this.label = config.label;
     this.base = config.base;
@@ -17,9 +22,9 @@ export default class Machine {
     }
   }
 
-  // get type(): MachineType {
-  //   return this.ssh ? 'Remote' : 'Local';
-  // }
+  get type(): 'Local' | 'Remote' {
+    return this.ssh ? Machine.type.Remote : Machine.type.Local;
+  }
 
   get userHost(): string {
     if (!this.ssh) {

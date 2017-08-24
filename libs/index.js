@@ -46,8 +46,12 @@ export default class Remonade extends EventEmitter {
           if (!Object.prototype.hasOwnProperty.call(opts, 'label')) {
             throw new Error(`\`label\` is required to \`remotes[${i}]\``);
           }
-          if (!Object.prototype.hasOwnProperty.call(opts.ssh, 'identifyFile')) {
-            throw new Error(`\`identifyFile\` is required to \`remotes[${i}]\``);
+
+          if (Object.prototype.hasOwnProperty.call(opts, 'ssh')) {
+            const {ssh} = opts;
+            if (!Object.prototype.hasOwnProperty.call(ssh, 'identifyFile')) {
+              throw new Error(`\`identifyFile\` is required to \`remotes[${i}]\``);
+            }
           }
 
           const ssh = new Ssh(opts.ssh);
@@ -55,7 +59,9 @@ export default class Remonade extends EventEmitter {
           const machineConfig = await pProps({
             label: opts.label,
             base: (opts.base || null),
-            ssh: ssh.init()
+            ssh: opts.ssh ?
+                   new Ssh(opts.ssh).init() :
+                   Promise.resolve(undefined)
           });
 
           return new Machine(machineConfig);
@@ -68,8 +74,8 @@ export default class Remonade extends EventEmitter {
           throw new Error('`volume` isn\'t function');
         }
 
-        const volume = new Volume();
-        machines.forEach(machine => volume.set(machine));
+        const volume = new Volume(machines);
+        // machines.forEach(machine => volume.set(machine));
 
         await volumeFn(volume);
         return volume;

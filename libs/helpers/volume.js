@@ -21,11 +21,44 @@ export default class Volume {
   remoteMachine: any;
   command: {[commandType]: string};
   commandEffect: {[commandType]: CommandEffect};
-  base: {[label: string]: string};
+  // [string]: (strjing) => Volume;
+  // base: {[label: string]: string};
   path: {[label: string]: string};
   pattern: {[label: string]: string};
 
-  constructor() {
+  constructor(machines: Array<Machine>) {
+    machines.forEach(machine => {
+      (this: any)[machine.label] = ([dirPath: string]) => {
+        if (machine.label !== 'local') {
+          if (this.remote instanceof Machine) {
+            throw new Error(`Already set up remote to ${this.toLabel}`);
+          }
+          this.remote = machine;
+        }
+
+        if (!this.from instanceof Machine) {
+          this.from = machine;
+          if (machine.type === Machine.type.Local) {
+            this.local = machine;
+          } else {
+            this.remote = machine;
+          }
+        } else if (!this.to instanceof Machine) {
+          this.to = machine;
+          if (machine.type === Machine.type.Local) {
+            this.local = machine;
+          } else {
+            this.remote = machine;
+          }
+        }
+
+        (l => {
+          const machinePath = this.path[l] = path.join(machine.base, dirPath);
+          this.pattern[l] = path.join(machinePath, '**/*');
+        })(machine.label);
+        return this;
+      };
+    });
     // this.from = undefined;
     // this.to = undefined;
     // this.local = undefined;
@@ -37,7 +70,7 @@ export default class Volume {
     // this.remoteMachine = null;
     this.command = {};
     this.commandEffect = {};
-    this.base = {};
+    // this.base = {};
     this.path = {};
     this.pattern = {};
   }
