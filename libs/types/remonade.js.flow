@@ -1,0 +1,23 @@
+/* @flow */
+/* eslint no-unused-vars: 0 */
+
+import Ssh from 'helpers/ssh';
+import Volume from 'helpers/volume';
+
+interface ArgumentConfig {
+  // base: ?string,
+  machines: any,
+  volumes: any
+}
+
+interface MachineConfig {
+  label: string,
+  base: string,
+  ssh: ?Ssh
+}
+
+interface Config {
+  // base: ?string,
+  machines: Array<RemoteConfig>,
+  volumes: Array<Volume>
+}

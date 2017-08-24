@@ -1,0 +1,14 @@
+/* @flow */
+/* eslint no-unused-vars: 0 */
+
+interface SshConfig {
+  host: string,
+  username: string,
+  password: ?string,
+  agent: ?string,
+  port: number,
+  identifyFile: string,
+  privateKey: ?Blob,
+  passphrase: ?string,
+  readyTimeout: ?number,
+}

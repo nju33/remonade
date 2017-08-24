@@ -1,6 +1,8 @@
+/* @flow */
+
 // import path from 'path';
-import {h, Component /* , Text */} from 'ink';
-import PropTypes from 'prop-types';
+import {h, Component} from 'ink';
+// import PropTypes from 'prop-types';
 import chokidar from 'chokidar';
 import termSize from 'term-size';
 import execa from 'execa';
@@ -17,20 +19,26 @@ import Rsync from 'helpers/rsync';
 // const ADJUST_ROW_NUMBER = 4;
 
 export default class Remonade extends Component {
-  constructor(props) {
+  props: Config
+  state: {
+    rowLength: number,
+    colLength: number,
+    log: {[label: string]: Array<string>}
+  }
+
+  constructor(props: Config) {
     super(props);
 
     const termSizeData = termSize();
     const remoteLength = props.remotes.length;
-    this.state = {
-      // rowLength: Math.floor((termSizeData.rows / 2) - ADJUST_ROW_NUMBER),
+    const state = {
       rowLength: Math.floor((termSizeData.rows / 2) - remoteLength),
       colLength: termSizeData.columns,
-      log: {
-        local: [],
-        remote: []
-      }
+      log: {}
     };
+    props.machines.forEach(machine => {
+
+    });
   }
 
   updateLocalLog(chunk) {
@@ -55,11 +63,11 @@ export default class Remonade extends Component {
     });
   }
 
-  // beforeExit(cb, remoteMachine, command) {
-  //   const killCommand = new Command('kill -9 -1', false);
-  //   killCommand.on('end', cb);
-  //   remoteMachine.runCommands([killCommand]);
-  // }
+  beforeExit(cb, remoteMachine, command) {
+    const killCommand = new Command('kill -9 -1', false);
+    killCommand.on('end', cb);
+    remoteMachine.runCommands([killCommand]);
+  }
 
   render() {
     return (
@@ -118,70 +126,78 @@ export default class Remonade extends Component {
     });
   }
 
-  // runCommands(hookCommands, remoteMachine, cup) {
-  //   return new Promise((resolve, reject) => {
-  //     const commands = hookCommands.map(line => {
-  //       const command = new Command(line);
-  //       command
-  //         .on('run', runner => {
-  //           this.updateRemoteLog([chalk.gray(`$ ${runner.command}`)]);
-  //
-  //           process.nextTick(resolve);
-  //         })
-  //         .on('data', line => {
-  //           const chunk = cup.pour(line.toString().split('\n'));
-  //           if (chunk.lenght === 0) {
-  //             return;
-  //           }
-  //           this.updateRemoteLog(chunk);
-  //         })
-  //         .on('error', line => {
-  //           const chunk = cup.pour(line.toString().split('\n'));
-  //           if (chunk.lenght === 0) {
-  //             return;
-  //           }
-  //           this.updateRemoteLog(chunk);
-  //
-  //           process.nextTick(reject);
-  //         });
-  //
-  //       exitHook(cb => {
-  //         this.beforeExit(cb, remoteMachine, command);
-  //       });
-  //       return command;
-  //     });
-  //     remoteMachine.runCommands(commands);
-  //   });
-  // }
+  runCommands(hookCommands, remoteMachine, cup) {
+    return new Promise((resolve, reject) => {
+      const commands = hookCommands.map(line => {
+        const command = new Command(line);
+        command
+          .on('run', runner => {
+            this.updateRemoteLog([chalk.gray(`$ ${runner.command}`)]);
 
-  handleLocal(volume, rsync, cup) {
+            process.nextTick(resolve);
+          })
+          .on('data', line => {
+            const chunk = cup.pour(line.toString().split('\n'));
+            if (chunk.lenght === 0) {
+              return;
+            }
+            this.updateRemoteLog(chunk);
+          })
+          .on('error', line => {
+            const chunk = cup.pour(line.toString().split('\n'));
+            if (chunk.lenght === 0) {
+              return;
+            }
+            this.updateRemoteLog(chunk);
+
+            process.nextTick(reject);
+          });
+
+        exitHook(cb => {
+          this.beforeExit(cb, remoteMachine, command);
+        });
+        return command;
+      });
+      remoteMachine.runCommands(commands);
+    });
+  }
+
+  handleLocal(volume, remoteMachine, rsync, cup) {
     const watcher = chokidar.watch(volume.localPattern, {});
     const handle = async () => {
-      if (volume.hasBeforeCommand()) {
-        await volume.runBeforeCommand();
+      if (volume.hasBeforeSync()) {
+        await this.runCommands(volume.beforeSyncCommands, remoteMachine, cup);
       }
 
-      if (volume.hasBeforeOnceCommand() && !volume.executedBeforeSyncOnce) {
-        await volume.runBeforeOnceCommand();
-        volume.executedBeforeOnce = true;
+      if (volume.hasBeforeSyncOnce() && !volume.executedBeforeSyncOnce) {
+        await this.runCommands(
+          volume.beforeSyncOnceCommands,
+          remoteMachine,
+          cup
+        );
+        volume.executedBeforeSyncOnce = true;
       }
 
       await this.execLocalSync(rsync, cup);
 
-      if (volume.hasAfterCommand()) {
-        await volume.runAfterCommand();
+      if (volume.hasAfterSync()) {
+        await this.runCommands(volume.afterSyncCommands, remoteMachine, cup);
       }
 
-      if (volume.hasAfterOnceCommand() && !volume.executedAfterSyncOnce) {
-        await volume.runAfterOnceCommand();
-        volume.executedAfterOnce = true;
+      if (volume.hasAfterSyncOnce() && !volume.executedAfterSyncOnce) {
+        await this.runCommands(
+          volume.afterSyncOnceCommands,
+          remoteMachine,
+          cup
+        );
+        volume.executedAfterSyncOnce = true;
       }
     };
 
     watcher.on('ready', handle).on('change', handle);
   }
 
-  handleRemote(volume, rsync, cup) {
+  handleRemote(volume, remoteMachine, rsync, cup) {
     const watcher = new Command(
       `node dist/remonade-chokidar.js --pattern '${volume.remotePattern}'`
     );
@@ -202,7 +218,7 @@ export default class Remonade extends Component {
     // watcher.on('end', () => {
     //   console.log('end');
     // });
-    volume.remoteMachine.runCommands([watcher]);
+    remoteMachine.runCommands([watcher]);
 
     exitHook(cb => {
       this.beforeExit(cb, remoteMachine, watcher);
@@ -211,29 +227,15 @@ export default class Remonade extends Component {
 
   async componentDidMount() {
     const {remotes, volumes} = this.props;
-    // const remoteMachines = remotes.map(remote => new RemoteMachine(remote));
+    const remoteMachines = remotes.map(remote => new RemoteMachine(remote));
 
-    remotes
-      .map(remote => new RemoteMachine(remote))
-      .forEach(remoteMachine => {
-        const target = volumes.find(v => v.remoteLabel === remoteMachine.label);
-        if (typeof target === 'undefined') {
-          throw new Error('err');
-        }
-        target.remoteMachine = remoteMachine;
-      });
-
-    volumes.forEach(volume => {
-      const rsync = new Rsync(volume);
-      const cup = new Cup(3);
-      if (volume.fromLabel === 'local') {
-        this.handleLocal(volume, rsync, cup);
-      } else {
-        this.handleRemote(volume, rsync, cup);
+    remoteMachines.forEach(rm => {
+      const target = volumes.find(v => v.remoteLabel === rm.label);
+      if (target === -1) {
+        throw new Error('err');
       }
+      volume.machine = rm;
     });
-
-    // console.log(volumes);
     // const remoteMachine = new RemoteMachine(
     //   this.props.ssh,
     //   this.props.base.remote
@@ -256,14 +258,14 @@ export default class Remonade extends Component {
   }
 }
 
-Remonade.defaultProps = {
-  base: '',
-  remotes: [],
-  volumes: []
-};
-
-Remonade.propTypes = {
-  base: PropTypes.string,
-  remotes: PropTypes.array,
-  volumes: PropTypes.array
-};
+// Remonade.defaultProps = {
+//   base: '',
+//   remotes: [],
+//   volumes: []
+// };
+//
+// Remonade.propTypes = {
+//   base: PropTypes.string,
+//   remotes: PropTypes.array,
+//   volumes: PropTypes.array
+// };

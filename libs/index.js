@@ -1,10 +1,13 @@
-import fs from 'fs';
-import {promisify} from 'util';
+/* @flow */
+
+import * as React from 'react';
 import EventEmitter from 'events';
 import {h, render} from 'ink';
 import pProps from 'p-props';
 import arrify from 'arrify';
 import RemonadeComponent from 'components/remonade';
+import Ssh from 'helpers/ssh';
+import Machine from 'helpers/machine';
 import Volume from 'helpers/volume';
 
 // import {
@@ -15,41 +18,48 @@ import Volume from 'helpers/volume';
 //   viewBaseLocal,
 //   viewBaseRemote
 // } from 'helpers/config';
-//
-// function local(volume, localPath) {
-//   return volume.local(localPath);
-// }
-// function remote(config, remotePath) {
-//   return volume.remote(remotePath);
-// }
 
 export default class Remonade extends EventEmitter {
-  static async adaptConfig(config = {}) {
+  config: Config
+
+  static async adaptConfig(config: ArgumentConfig) {
     const base = config.base || process.cwd();
-    const remotes = await Promise.all(
-      arrify(config.remotes).map((remoteOpts, i) => {
-        const {
-          label,
-          base: _base,
-          ssh
-        } = remoteOpts;
-        if (!Object.prototype.hasOwnProperty.call(remoteOpts, 'label')) {
-          throw new Error(`\`label\` is required to \`remotes[${i}]\``);
-        }
+    const machines = await Promise.all(
+      arrify(config.machines)
+        .map((() => {
+          let existsLocal = false;
+          return opts => {
+            if (typeof opts.ssh !== 'object' && existsLocal) {
+              throw new Error('There are two or more local machine settings');
+            }
 
-        if (!Object.prototype.hasOwnProperty.call(ssh, 'identifyFile')) {
-          throw new Error(`\`identifyFile\` is required to \`remotes[${i}]\``);
-        }
+            if (typeof opts.ssh === 'object') {
+              opts.type = 'remote';
+            } else {
+              opts.type = 'local';
+              existsLocal = true;
+            }
+            return opts;
+          };
+        })())
+        .map(async (opts, i) => {
+          if (!Object.prototype.hasOwnProperty.call(opts, 'label')) {
+            throw new Error(`\`label\` is required to \`remotes[${i}]\``);
+          }
+          if (!Object.prototype.hasOwnProperty.call(opts.ssh, 'identifyFile')) {
+            throw new Error(`\`identifyFile\` is required to \`remotes[${i}]\``);
+          }
 
-        return pProps({
-          label,
-          base: (_base || null),
-          ssh: pProps({
-            ...(ssh || {}),
-            privateKey: promisify(fs.readFile)(ssh.identifyFile)
-          })
-        });
-      })
+          const ssh = new Ssh(opts.ssh);
+
+          const machineConfig = await pProps({
+            label: opts.label,
+            base: (opts.base || null),
+            ssh: ssh.init()
+          });
+
+          return new Machine(machineConfig);
+        })
     );
 
     const volumes = await Promise.all(
@@ -59,10 +69,7 @@ export default class Remonade extends EventEmitter {
         }
 
         const volume = new Volume();
-        volume.set('local', base);
-        remotes.forEach(remote => {
-          volume.set(remote.label, remote.base);
-        });
+        machines.forEach(machine => volume.set(machine));
 
         await volumeFn(volume);
         return volume;
@@ -71,15 +78,18 @@ export default class Remonade extends EventEmitter {
 
     const result = await pProps({
       base,
-      remotes,
+      machines,
       volumes
     });
     return result;
   }
 
-  constructor(config = {}) {
+  constructor(config: Config) {
     super();
     this.config = config;
+
+    console.log(config);
+    process.exit(0);
   }
 
   start() {

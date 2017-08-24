@@ -1,11 +1,18 @@
 {
-  "extends": ["xo/esnext", "xo-react/space"],
+  "parser": "babel-eslint",
+  "plugins": ["flowtype"],
+  "extends": ["xo/esnext", "xo-react/space", "plugin:flowtype/recommended"],
   "settings": {
     "react": {
       "pragma": "h"
     }
   },
   "rules": {
+    "flowtype/define-flow-type": 1,
+    "flowtype/use-flow-type": 1,
+    "no-unused-vars": ["error", {
+      varsIgnorePattern: "^React$"
+    }],
     "indent": ["error", 2],
     "capitalized-comments": ["error", "never"]
   }

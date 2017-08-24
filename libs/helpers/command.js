@@ -36,7 +36,7 @@ export default class Command extends EventEmitter {
     this.emit('error', data);
   }
 
-  run(machine) {
+  exec(machine) {
     const conn = new Client();
 
     return new Promise((resolve, reject) => {

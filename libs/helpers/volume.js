@@ -1,44 +1,89 @@
+/* @flow */
+
 import path from 'path';
-import R from 'ramda';
+import Rsync from 'Rsync';
+// import R from 'ramda';
 import CommandEffect from 'helpers/command-effect';
-import commandsFlatten from 'helpers/commands-flatten';
+import Machine from 'helpers/machine';
+import Command from 'helpers/command';
+// import commandsFlatten from 'helpers/commands-flatten';
+
+type commandType = 'Before' | 'BeforeOnce' | 'After' | 'AfterOnce';
 
 export default class Volume {
-  constructor() {
-    // this.main = null;
-    // this._ssh = ssh;
-    // this._base = base;
-    // this._base.local = base.local || '/';
-    // this._base.remote = base.remote || '/';
-    // this._label = null;
-    // this._local = null;
-    // this._remote = null;
-    // this._beforeSyncCommands = null;
-    // this._beforeSyncOnceCommands = null;
-    // this._afterSyncCommands = null;
-    // this._afterSyncOnceCommands = null;
-    // this.executedBeforeSyncOnce = false;
-    // this.executedAfterSyncOnce = false;
+  from: Machine;
+  to: Machine;
+  remote: Machine;
+  local: Machine;
+  fromLabel: string;
+  toLabel: string;
+  remoteLabel: string;
+  remoteMachine: any;
+  command: {[commandType]: string};
+  commandEffect: {[commandType]: CommandEffect};
+  base: {[label: string]: string};
+  path: {[label: string]: string};
+  pattern: {[label: string]: string};
 
-    this.fromLabel = '';
-    this.toLabel = '';
-    this.remoteLabel = '';
-    this.remoteMachine = null;
-    this.command = {
-      beforeOnce: null,
-      before: null,
-      afterOnce: null,
-      after: null
-    };
-    this.commandEffect = {
-      beforeOnce: null,
-      before: null,
-      afterOnce: null,
-      after: null
-    };
+  constructor() {
+    // this.from = undefined;
+    // this.to = undefined;
+    // this.local = undefined;
+    // this.remote = undefined;
+
+    // this.fromLabel = '';
+    // this.toLabel = '';
+    // this.remoteLabel = '';
+    // this.remoteMachine = null;
+    this.command = {};
+    this.commandEffect = {};
     this.base = {};
     this.path = {};
     this.pattern = {};
+  }
+
+  // get userHost(): string {
+  //   const {username, host} = this.remoteMachine.ssh;
+  //   return `${username}@${host}`;
+  // }
+
+  get identifyFile(): string {
+    return this.remoteMachine.identifyFile;
+  }
+
+  get rsyncCommand(): string {
+    const fromLabel = this.from.label;
+    const from = this.from.ensureSyncPath(this.path[fromLabel]);
+    const toLabel = this.to.label;
+    const to = this.to.ensureSyncPath(this.path[toLabel]);
+
+    return new Rsync()
+      .shell(`ssh -i ${this.identifyFile}`)
+      .flags('arv')
+      .set('delete')
+      .source(from)
+      .destination(to)
+      .command();
+  }
+
+  exec(command) {
+    console.log(9);
+  }
+
+  sync() {
+    const command = new Command(this.rsyncCommand);
+    comamnd.exec();
+  }
+
+  async process() {
+    if (!this.executedBeforeOnce) {
+      await this.exec(this.command.BeforeOnce);
+    }
+    await this.exec(this.command.Before);
+    await this.exec(this.command.After);
+    if (!this.executedAfterOnce) {
+      await this.exec(this.command.AfterOnce);
+    }
   }
 
   hasBeforeOnceCommand() {
@@ -122,7 +167,7 @@ export default class Volume {
     this.addTemplateLiteral(label);
   }
 
-  addTemplateLiteral(label) {
+  addTemplateLiteral(label: string) {
     this[label] = ([_path]) => {
       if (label !== 'local' && this.remoteLabel !== '') {
         throw new Error(`Already set up remote to ${this.toLabel}`);

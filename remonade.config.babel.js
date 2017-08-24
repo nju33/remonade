@@ -1,6 +1,10 @@
 export default {
   // base: __dirname,
-  remotes: [
+  machines: [
+    {
+      label: 'local',
+      base: __dirname
+    },
     {
       label: 'typescript',
       base: '/home/remonade/remonade',
@@ -10,15 +14,15 @@ export default {
         identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
       }
     },
-    // {
-    //   label: 'gulp',
-    //   base: '/home/remonade/remonade',
-    //   ssh: {
-    //     hostname: '54.64.238.197',
-    //     user: 'remonade',
-    //     identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
-    //   }
-    // }
+    {
+      label: 'gulp',
+      base: '/home/remonade/remonade',
+      ssh: {
+        hostname: '54.64.238.197',
+        user: 'remonade',
+        identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
+      }
+    }
   ],
   // ssh: {
   //   hostname: '54.64.238.197',
@@ -32,35 +36,44 @@ export default {
   volumes: [
     volume => {
       console.log(volume);
-      return volume
-        .typescript`examples/dist/scripts`
+      return volume.typescript`examples/dist/scripts`
         .local`examples/dist/scripts`;
     },
     // volume => volume
     //             .gulp`examples/dist/styles`
     //             .local`examples/dist/styles`,
-    volume => volume
-                .local`examples/src/scripts`
-                .typescript`examples/src/scripts`
-                .before`
-                  (
-                    cd examples &&
-                    yarn lint
-                  )
-                `
-                  .effect()
-                  .onClose(() => console.log('end'))
-                  .onError((err, {beeper, notify}) => beeper(2))
-                  .end()
-                .beforeOnce`
-                  (
-                    cd examples &&
-                    yarn dev
-                  )
-                `
-                  .effect()
-                  .onError((err, {beeper, notify}) => beeper(2))
-                // .afterSync`tsc examples/src/*.ts --outDir dist`,
+    volume =>
+      volume.local`examples/src/scripts`.typescript`examples/src/scripts`
+        .before`
+          (
+            cd examples &&
+            yarn lint
+          )
+        `
+        .effect()
+        .onClose(() => console.log('end'))
+        .onError((err, {beeper, notify}) => {
+          if (err !== null) {
+            console.log(1);
+          }
+          beeper(2);
+          notify('aa');
+        })
+        .end()
+        .beforeOnce`
+          (
+            cd examples &&
+            yarn dev
+          )
+        `
+        .effect()
+        .onError((err, {beeper}) => {
+          if (err !== null) {
+            console.log(1);
+          }
+          beeper(2);
+        })
+    // .afterSync`tsc examples/src/*.ts --outDir dist`,
     // {
     //   main: 'local',
     //   commands: [
@@ -83,9 +96,5 @@ export default {
     //   remote: 'remote/styles'
     // }
   ],
-  commands: [
-    'echo 1',
-    'sleep 3',
-    'tsc --watch'
-  ]
+  commands: ['echo 1', 'sleep 3', 'tsc --watch']
 };

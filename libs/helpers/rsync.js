@@ -1,13 +1,15 @@
+// @flow
+
 import RsyncPkg from 'rsync';
 
 export default class Rsync {
-  constructor(volume) {
-    this._volume = volume;
+  constructor(sshConfig: SshConfig) {
+    // this._volume = volume;
 
-    const {ssh} = volume.remoteMachine;
-    const preRemote = `${ssh.username}@${ssh.host}`;
+    // const {ssh} = volume.remoteMachine;
+    const preRemote = `${sshConfig.username}@${sshConfig.host}`;
     this._rsync = new RsyncPkg()
-      .shell(`ssh -i ${ssh.identifyFile}`)
+      .shell(`ssh -i ${sshConfig.identifyFile}`)
       .flags('arv')
       .set('delete');
 
