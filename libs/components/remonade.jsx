@@ -2,7 +2,6 @@
 
 // import path from 'path';
 import {h, Component} from 'ink';
-// import PropTypes from 'prop-types';
 import chokidar from 'chokidar';
 import termSize from 'term-size';
 import execa from 'execa';
@@ -257,15 +256,3 @@ export default class Remonade extends Component {
     });
   }
 }
-
-// Remonade.defaultProps = {
-//   base: '',
-//   remotes: [],
-//   volumes: []
-// };
-//
-// Remonade.propTypes = {
-//   base: PropTypes.string,
-//   remotes: PropTypes.array,
-//   volumes: PropTypes.array
-// };
