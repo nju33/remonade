@@ -1,100 +1,48 @@
 export default {
-  // base: __dirname,
-  machines: [
-    {
-      label: 'local',
-      base: __dirname
-    },
-    {
-      label: 'typescript',
-      base: '/home/remonade/remonade',
+  base: __dirname,
+  machines: {
+    webpack: {
+      base: '/home/remonade/remonade/',
+      tasks: [
+        {
+          immidiate: true,
+          command: 'yarn dev:script'
+        }
+      ],
       ssh: {
         hostname: '54.64.238.197',
         user: 'remonade',
         identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
       }
     },
-    {
-      label: 'gulp',
-      base: '/home/remonade/remonade',
+    gulp: {
+      base: '/home/remonade/remonade/',
+      tasks: [
+        {
+          immidiate: true,
+          workdir: '.',
+          command: 'yarn dev:style'
+        }
+      ],
       ssh: {
         hostname: '54.64.238.197',
         user: 'remonade',
         identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
       }
     }
-  ],
-  // ssh: {
-  //   hostname: '54.64.238.197',
-  //   user: 'remonade',
-  //   identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
-  // },
-  // base: {
-  //   local: __dirname,
-  //   remote: '/home/remonade/remonade'
-  // },
+  },
   volumes: [
-    volume => {
-      console.log(volume);
-      return volume.typescript`examples/dist/scripts`
-        .local`examples/dist/scripts`;
-    },
-    // volume => volume
-    //             .gulp`examples/dist/styles`
-    //             .local`examples/dist/styles`,
-    volume =>
-      volume.local`examples/src/scripts`.typescript`examples/src/scripts`
-        .before`
-          (
-            cd examples &&
-            yarn lint
-          )
-        `
-        .effect()
-        .onClose(() => console.log('end'))
-        .onError((err, {beeper, notify}) => {
-          if (err !== null) {
-            console.log(1);
-          }
-          beeper(2);
-          notify('aa');
-        })
-        .end()
-        .beforeOnce`
-          (
-            cd examples &&
-            yarn dev
-          )
-        `
-        .effect()
-        .onError((err, {beeper}) => {
-          if (err !== null) {
-            console.log(1);
-          }
-          beeper(2);
-        })
-    // .afterSync`tsc examples/src/*.ts --outDir dist`,
-    // {
-    //   main: 'local',
-    //   commands: [
-    //     'yarn tsc'
-    //   ],
-    //   local: 'src/scripts',
-    //   remote: 'remote/scripts'
-    // },
-    // {
-    //   main: 'remote'
-    //   remote: 'remote/scripts/**/*.js',
-    //   local: 'dist/'
-    // }
-    // {
-    //   main: 'local',
-    //   commands: [
-    //     'yarn gulp styles'
-    //   ],
-    //   local: 'src/styles',
-    //   remote: 'remote/styles'
-    // }
-  ],
-  commands: ['echo 1', 'sleep 3', 'tsc --watch']
+    v => v
+      .local`examples/src/scripts`
+      .webpack`${v.path.local}`,
+    v => v
+      .webpack`examples/dist/scripts`
+      .local`${v.path.webpack}`,
+    v => v
+      .local`examples/dist/styles`
+      .gulp`${v.path.local}`,
+    v => v
+      .gulp`examples/dist/styles`
+      .local`${v.path.gulp}`
+  ]
 };

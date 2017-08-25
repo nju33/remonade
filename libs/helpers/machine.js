@@ -1,38 +1,44 @@
 /* @flow */
 
 import Ssh from 'helpers/ssh';
+import type {SshProp} from 'helpers/ssh';
 
 // type MachineType = 'Local' | 'Remote';
 
 export default class Machine {
   label: string;
-  base: string;
+  tasks: Array<{workdir?: string, command: string}>
+  base: string | null;
   ssh: ?Ssh;
 
-  constructor(config: MachineConfig) {
-    this.label = config.label;
-    this.base = config.base;
-    if (config.ssh) {
-      this.ssh = config.ssh;
+  constructor(label: string, base: string | null, ssh: ?Ssh) {
+    this.label = label;
+    this.base = base;
+    if (typeof ssh !== 'undefined') {
+      this.ssh = ssh;
     }
   }
 
-  // get type(): MachineType {
-  //   return this.ssh ? 'Remote' : 'Local';
-  // }
+  get type(): string {
+    return typeof this.ssh === 'undefined' ? 'local' : 'remote';
+  }
+
+  isLocal(): boolean {
+    return this.type === 'local';
+  }
 
   get userHost(): string {
     if (!this.ssh) {
       throw new Error('Trying to remotely access it though it is local');
     }
-    return `${this.ssh.config.username}@${this.ssh.config.host}`;
+    return `${(this.ssh: SshProp).username}@${(this.ssh: SshProp).host}`;
   }
 
   get identifyFile(): string {
     if (!this.ssh) {
       throw new Error('Trying to remotely access it though it is local');
     }
-    return this.ssh.config.identifyFile;
+    return (this.ssh: SshProp).identifyFile;
   }
 
   ensureSyncPath(dir: string): string {

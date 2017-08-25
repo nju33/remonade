@@ -10,51 +10,32 @@ import Ssh from 'helpers/ssh';
 import Machine from 'helpers/machine';
 import Volume from 'helpers/volume';
 
-// import {
-//   viewSshHostname,
-//   viewSshPort,
-//   viewSshUser,
-//   viewSshIdentifyFile,
-//   viewBaseLocal,
-//   viewBaseRemote
-// } from 'helpers/config';
-
 export default class Remonade extends EventEmitter {
   config: Config
 
   static async adaptConfig(config: ArgumentConfig) {
     const base = config.base || process.cwd();
+    const localMachine = new Machine('local', base);
+
+    const machineEntries = Object.entries(config.machines || {});
     const machines = await Promise.all(
-      arrify(config.machines)
-        .map((() => {
-          let existsLocal = false;
-          return opts => {
-            if (typeof opts.ssh !== 'object' && existsLocal) {
-              throw new Error('There are two or more local machine settings');
-            }
-
-            if (typeof opts.ssh === 'object') {
-              opts.type = 'remote';
-            } else {
-              opts.type = 'local';
-              existsLocal = true;
-            }
-            return opts;
-          };
-        })())
-        .map(async (opts, i) => {
-          if (!Object.prototype.hasOwnProperty.call(opts, 'label')) {
-            throw new Error(`\`label\` is required to \`remotes[${i}]\``);
+      arrify(machineEntries)
+        .map(pairs => {
+          const opts = pairs[1];
+          if (typeof opts.ssh !== 'object') {
+            throw new Error('`.ssh` is required to machines');
           }
-          if (!Object.prototype.hasOwnProperty.call(opts.ssh, 'identifyFile')) {
-            throw new Error(`\`identifyFile\` is required to \`remotes[${i}]\``);
+          if (typeof opts.ssh.identifyFile !== 'string') {
+            throw new Error('`.ssh.identifyFile` is required to machines');
           }
-
+          return pairs;
+        })
+        .map(async pairs => {
+          const [label, opts] = pairs;
           const ssh = new Ssh(opts.ssh);
-
           const machineConfig = await pProps({
-            label: opts.label,
-            base: (opts.base || null),
+            label,
+            base: opts.base || null,
             ssh: ssh.init()
           });
 
@@ -68,7 +49,7 @@ export default class Remonade extends EventEmitter {
           throw new Error('`volume` isn\'t function');
         }
 
-        const volume = new Volume();
+        const volume = new Volume([localMachine, ...machines]);
         machines.forEach(machine => volume.set(machine));
 
         await volumeFn(volume);
@@ -98,3 +79,12 @@ export default class Remonade extends EventEmitter {
 }
 
 process.on('unhandledRejection', console.dir);
+
+// import {
+//   viewSshHostname,
+//   viewSshPort,
+//   viewSshUser,
+//   viewSshIdentifyFile,
+//   viewBaseLocal,
+//   viewBaseRemote
+// } from 'helpers/config';

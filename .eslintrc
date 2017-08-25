@@ -1,7 +1,10 @@
 {
   "parser": "babel-eslint",
-  "plugins": ["flowtype"],
+  "plugins": ["flowtype", "jest"],
   "extends": ["xo/esnext", "xo-react/space", "plugin:flowtype/recommended"],
+  "env": {
+    "jest/globals": true
+  },
   "settings": {
     "react": {
       "pragma": "h"

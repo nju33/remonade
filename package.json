@@ -10,14 +10,20 @@
 	"scripts": {
 		"cli": "node -r babel-register libs/cli.js",
 		"example": "node -r babel-register examples/example.js",
-		"build": "gulp libs"
+		"build": "gulp libs",
+		"jest": "jest"
 	},
 	"moduleRoots": [
 		"libs"
 	],
-	"pkg": {
-		"scripts": "dist/**/*.js",
-		"___assets": "views/**/*"
+	"jest": {
+    "moduleNameMapper": {
+      "^helpers/(.+)": "<rootDir>/libs/helpers/$1"
+    },
+		"moduleFileExtensions": [
+			"js",
+			"json"
+		]
 	},
 	"devDependencies": {
 		"babel-eslint": "^7.2.3",
@@ -34,6 +40,7 @@
 		"eslint-config-xo": "^0.18.2",
 		"eslint-config-xo-react": "^0.13.0",
 		"eslint-plugin-flowtype": "^2.35.0",
+		"eslint-plugin-jest": "^20.0.3",
 		"eslint-plugin-jsx-a11y": "^6.0.2",
 		"eslint-plugin-react": "^7.3.0",
 		"flow-bin": "^0.53.1",
@@ -42,6 +49,7 @@
 		"gulp-cached": "^1.1.1",
 		"gulp-plumber": "^1.1.0",
 		"gulp-sourcemaps": "^2.6.0",
+		"jest": "^20.0.4",
 		"pretty-error": "^2.1.1"
 	},
 	"dependencies": {

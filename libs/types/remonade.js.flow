@@ -5,7 +5,7 @@ import Ssh from 'helpers/ssh';
 import Volume from 'helpers/volume';
 
 interface ArgumentConfig {
-  // base: ?string,
+  base: ?string,
   machines: any,
   volumes: any
 }
@@ -17,7 +17,6 @@ interface MachineConfig {
 }
 
 interface Config {
-  // base: ?string,
-  machines: Array<RemoteConfig>,
+  machines: Array<MachineConfig>,
   volumes: Array<Volume>
 }
