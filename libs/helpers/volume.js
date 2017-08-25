@@ -1,7 +1,7 @@
 /* @flow */
 
 import path from 'path';
-import Rsync from 'Rsync';
+import Rsync from 'rsync';
 // import R from 'ramda';
 import CommandEffect from 'helpers/command-effect';
 import Machine from 'helpers/machine';
