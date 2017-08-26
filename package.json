@@ -11,8 +11,9 @@
 		"cli": "node -r babel-register libs/cli.js",
 		"example": "node -r babel-register examples/example.js",
 		"build": "gulp libs",
-		"test": "yarn jest",
-		"jest": "jest && codecov"
+		"test": "[ \"true\" = \"$CI\" ] && yarn jest || yarn local:jest",
+		"jest": "jest && codecov",
+		"local:jest": "jest --watch"
 	},
 	"moduleRoots": [
 		"libs"

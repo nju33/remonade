@@ -1,8 +1,10 @@
 export default {
   base: __dirname,
+  color: 'green',
   machines: {
     webpack: {
       base: '/home/remonade/remonade/',
+      color: 'blue',
       tasks: [
         {
           immidiate: true,
@@ -17,6 +19,7 @@ export default {
     },
     gulp: {
       base: '/home/remonade/remonade/',
+      color: 'red',
       tasks: [
         {
           immidiate: true,

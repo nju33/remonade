@@ -1,5 +1,6 @@
 /* @flow */
 
+import path from 'path';
 import * as React from 'react';
 import EventEmitter from 'events';
 import {h, render} from 'ink';
@@ -9,13 +10,14 @@ import RemonadeComponent from 'components/remonade';
 import Ssh from 'helpers/ssh';
 import Machine from 'helpers/machine';
 import Volume from 'helpers/volume';
+import Task from 'helpers/task';
 
 export default class Remonade extends EventEmitter {
   config: Config
 
   static async adaptConfig(config: ArgumentConfig) {
     const base = config.base || process.cwd();
-    const localMachine = new Machine('local', base);
+    const localMachine = new Machine('local', config.color, base);
 
     const machineEntries = Object.entries(config.machines || {});
     const machines = await Promise.all(
@@ -32,14 +34,32 @@ export default class Remonade extends EventEmitter {
         })
         .map(async pairs => {
           const [label, opts] = pairs;
-          const ssh = new Ssh(opts.ssh);
-          const machineConfig = await pProps({
-            label,
-            base: opts.base || null,
-            ssh: ssh.init()
-          });
+          const ssh = await (new Ssh(opts.ssh)).init();
+          // const machineConfig = await pProps({
+          //   label,
+          //   tasks:
+          //   base: opts.base || null,
+          //   ssh: ssh.init()
+          // });
 
-          return new Machine(machineConfig);
+          const machine = new Machine(label, opts.color, opts.base, ssh);
+          opts.tasks.forEach(task => {
+            const workdir = (() => {
+              if (machine.base === null) {
+                if (!task.workdir) {
+                  throw new Error('Set either `machine.base` or `task.workdir`');
+                }
+                return task.workdir;
+              }
+              return path.join(machine.base, task.workdir || '.');
+            })();
+            machine.addTask(new Task(
+              task.immidiate,
+              workdir,
+              task.command
+            ));
+          });
+          return machine;
         })
     );
 
@@ -50,27 +70,24 @@ export default class Remonade extends EventEmitter {
         }
 
         const volume = new Volume([localMachine, ...machines]);
-        machines.forEach(machine => volume.set(machine));
+        // machines.forEach(machine => volume.set(machine));
 
         await volumeFn(volume);
+        debugger;
         return volume;
       })
     );
 
-    const result = await pProps({
-      base,
-      machines,
+    const result = {
+      machines: [localMachine, ...machines],
       volumes
-    });
+    };
     return result;
   }
 
   constructor(config: Config) {
     super();
     this.config = config;
-
-    console.log(config);
-    process.exit(0);
   }
 
   start() {

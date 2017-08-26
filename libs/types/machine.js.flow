@@ -1,0 +1,8 @@
+/* @flow */
+
+interface MachineTask {
+  color?: string,
+  immidiate: boolean,
+  workdir?: string,
+  command: string
+}

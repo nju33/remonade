@@ -2,21 +2,24 @@
 /* eslint no-unused-vars: 0 */
 
 import Ssh from 'helpers/ssh';
+import Machine from 'helpers/machine';
 import Volume from 'helpers/volume';
 
 interface ArgumentConfig {
   base: ?string,
+  color: ?string,
   machines: any,
   volumes: any
 }
 
 interface MachineConfig {
+  color: string,
   label: string,
   base: string,
   ssh: ?Ssh
 }
 
 interface Config {
-  machines: Array<MachineConfig>,
+  machines: Array<Machine>,
   volumes: Array<Volume>
 }

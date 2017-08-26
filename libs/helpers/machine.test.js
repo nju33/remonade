@@ -26,7 +26,7 @@ describe('Machine', () => {
         host: '0.0.0.0',
         identifyFile: 'aaa/bbb/ccc'
       });
-      machine = new Machine('remote', '/', ssh);
+      machine = new Machine('remote', undefined, '/', ssh);
     });
 
     it('has userHost', () => {
@@ -35,6 +35,26 @@ describe('Machine', () => {
 
     it('has identifyFile', () => {
       expect(machine.identifyFile).toBe('aaa/bbb/ccc');
+    });
+  });
+
+  describe('common', () => {
+    let machine = null;
+
+    beforeEach(() => {
+      const ssh = new Ssh({
+        username: 'foo',
+        host: '0.0.0.0',
+        identifyFile: 'aaa/bbb/ccc'
+      });
+      machine = new Machine('remote', undefined, '/', ssh);
+    });
+
+    test('logs', () => {
+      machine.log('foo');
+      machine.log(['bar', 'baz']);
+
+      expect(machine.logs.length).toBe(3);
     });
   });
 });

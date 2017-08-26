@@ -2,21 +2,64 @@
 
 import Ssh from 'helpers/ssh';
 import type {SshProp} from 'helpers/ssh';
-
-// type MachineType = 'Local' | 'Remote';
+import Task from 'helpers/task';
 
 export default class Machine {
   label: string;
-  tasks: Array<{workdir?: string, command: string}>
+  color: string | null;
   base: string | null;
   ssh: ?Ssh;
+  tasks: Array<Task>;
+  logs: Array<string>;
 
-  constructor(label: string, base: string | null, ssh: ?Ssh) {
+  constructor(label: string, color: ?string, base: ?string, ssh: ?Ssh) {
     this.label = label;
-    this.base = base;
+    this.color = color || null;
+    this.base = base || null;
     if (typeof ssh !== 'undefined') {
       this.ssh = ssh;
     }
+    this.tasks = [];
+    this.logs = [];
+  }
+
+  addTask(task: Task): void {
+    this.tasks.push(task)
+  }
+
+  log(logs: Array<string>): void {
+    if (typeof logs === 'string') {
+      logs = [logs];
+    }
+    this.logs = [...this.logs, ...logs];
+  }
+
+  get immidiatelyTasks(): Array<Task> {
+    return this.tasks.filter(task => Boolean(task.immidiate));
+  }
+
+  get nonImmidiatelyTasks(): Array<Task> {
+    return this.tasks.filter(task => !Boolean(task.immidiate));
+  }
+
+  runImmidiatelyTasks(): void {
+    if (!this.ssh) {
+      return;
+    }
+
+    this.immidiatelyTasks.forEach(task => {
+      console.log(task);
+      task.process((this: any).ssh);
+      task.on('end', () => {
+        console.log(9);
+      })
+      task.on('data', line => {
+        console.log(line);
+      });
+      task.on('error', line => {
+        console.log(line);
+      });
+    });
   }
 
   get type(): string {

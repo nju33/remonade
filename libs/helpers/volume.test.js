@@ -7,8 +7,8 @@ describe('Volume', () => {
     let volume = null;
     beforeEach(() => {
       volume = new Volume([
-        new Machine('local', '/'),
-        new Machine('remote', '/', new Ssh({host: '0.0.0.0'}))
+        new Machine('local', undefined, '/'),
+        new Machine('remote', undefined, '/', new Ssh({host: '0.0.0.0'}))
       ])
         .local`foo`
         .remote`bar`;
