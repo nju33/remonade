@@ -1,23 +1,32 @@
 /* @flow */
 
+import EventEmitter from 'events';
 import Ssh from 'helpers/ssh';
 import type {SshProp} from 'helpers/ssh';
 import Task from 'helpers/task';
+import exitHook from 'async-exit-hook';
 
-export default class Machine {
+export default class Machine extends EventEmitter {
   label: string;
   color: string | null;
-  base: string | null;
+  base: string;
   ssh: ?Ssh;
   tasks: Array<Task>;
   logs: Array<string>;
 
-  constructor(label: string, color: ?string, base: ?string, ssh: ?Ssh) {
+  constructor(label: string, color: ?string, base: string, ssh: ?Ssh) {
+    super();
+
     this.label = label;
     this.color = color || null;
-    this.base = base || null;
+    this.base = base;
     if (typeof ssh !== 'undefined') {
       this.ssh = ssh;
+      exitHook(cb => {
+        const exitTask = new Task(false, '/', 'kill -9 -1');
+        exitTask.process((this.ssh: any))
+          .on('end', cb);
+      })
     }
     this.tasks = [];
     this.logs = [];
@@ -48,17 +57,19 @@ export default class Machine {
     }
 
     this.immidiatelyTasks.forEach(task => {
-      console.log(task);
-      task.process((this: any).ssh);
-      task.on('end', () => {
-        console.log(9);
-      })
-      task.on('data', line => {
-        console.log(line);
-      });
-      task.on('error', line => {
-        console.log(line);
-      });
+      task.process((this: any).ssh)
+        .on('end', () => {
+          this.emit('update');
+        })
+        .on('data', line => {
+          // this.logs = [...this.logs, line];
+          this.logs.push(line);
+          this.emit('update');
+        })
+        .on('error', line => {
+          this.logs.push(line);
+          this.emit('update');
+        });
     });
   }
 
@@ -84,10 +95,20 @@ export default class Machine {
     return (this.ssh: SshProp).identifyFile;
   }
 
-  ensureSyncPath(dir: string): string {
+  getRsyncPath(dir: string): string {
     if (this.ssh) {
       return `${this.userHost}:${dir}`;
     }
     return dir;
+  }
+
+  runChokidar(base: string, command: string): Machine {
+    const task = new Task(false, base, command);
+    task.process((this.ssh: any))
+      .on('data', line => {
+      })
+      .on('error', line => {
+      })
+    return this;
   }
 }

@@ -10,6 +10,9 @@ const flags = yargs
   .argv;
 
 chokidar.watch(flags.pattern)
+  .on('ready', () => {
+    console.log('READY');
+  })
   .on('add', () => {
     console.log('ADD');
   })

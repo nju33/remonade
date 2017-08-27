@@ -1,20 +1,24 @@
 /* @flow */
 
+import EventEmitter from 'events';
 import path from 'path';
 import Rsync from 'rsync';
+import chokidar from 'chokidar';
+import bind from 'lodash-decorators/bind';
 // import R from 'ramda';
 import CommandEffect from 'helpers/command-effect';
 import Machine from 'helpers/machine';
 import Command from 'helpers/command';
+import ExitHook from 'async-exit-hook';
 // import commandsFlatten from 'helpers/commands-flatten';
 
 type commandType = 'Before' | 'BeforeOnce' | 'After' | 'AfterOnce';
 
-export default class Volume {
+export default class Volume extends EventEmitter {
   from: Machine;
   to: Machine;
   remote: Machine;
-  local: Machine;
+  localMachine: Machine;
   fromLabel: string;
   toLabel: string;
   remoteLabel: string;
@@ -27,26 +31,27 @@ export default class Volume {
   pattern: {[label: string]: string};
 
   constructor(machines: Array<Machine>) {
+    super();
+
     machines.forEach(machine => {
       (this: any)[machine.label] = ([dirPath: string]) => {
-        if (machine.type !== 'local') {
+        if (!machine.isLocal()) {
           if (this.remote instanceof Machine) {
             throw new Error(`Already set up remote to ${this.toLabel}`);
           }
-          this.remote = machine;
         }
 
         if (!(this.from instanceof Machine)) {
           this.from = machine;
-          if (machine.type === 'local') {
-            this.local = machine;
+          if (machine.isLocal()) {
+            this.localMachine = machine;
           } else {
             this.remote = machine;
           }
         } else if (!(this.to instanceof Machine)) {
           this.to = machine;
-          if (machine.type === 'remote') {
-            this.local = machine;
+          if (machine.isLocal()) {
+            this.localMachine = machine;
           } else {
             this.remote = machine;
           }
@@ -89,14 +94,14 @@ export default class Volume {
   }
 
   get identifyFile(): string {
-    return this.remoteMachine.identifyFile;
+    return this.remote.identifyFile;
   }
 
   get rsyncCommand(): string {
     const fromLabel = this.from.label;
-    const from = this.from.ensureSyncPath(this.path[fromLabel]);
+    const from = this.from.getRsyncPath(this.path[fromLabel]);
     const toLabel = this.to.label;
-    const to = this.to.ensureSyncPath(this.path[toLabel]);
+    const to = this.to.getRsyncPath(this.path[toLabel]);
 
     return new Rsync()
       .shell(`ssh -i ${this.identifyFile}`)
@@ -107,25 +112,66 @@ export default class Volume {
       .command();
   }
 
-  exec(command) {
-    console.log(9);
+  @bind()
+  _handleReady(): void {
+    this.emit('ready');
   }
 
-  sync() {
-    const command = new Command(this.rsyncCommand);
-    comamnd.exec();
+  @bind()
+  _handleAdd(): void {
+    this.emit('add');
   }
 
-  async process() {
-    if (!this.executedBeforeOnce) {
-      await this.exec(this.command.BeforeOnce);
-    }
-    await this.exec(this.command.Before);
-    await this.exec(this.command.After);
-    if (!this.executedAfterOnce) {
-      await this.exec(this.command.AfterOnce);
-    }
+  @bind()
+  _handleChange(): void {
+    this.emit('change');
   }
+
+  // watchOnLocal(): void {
+  //   chokidar.watch(this.pattern.local)
+  //     .on('ready', this._handleReady)
+  //     .on('add', this._handleAdd)
+  //     .on('change', this._handleChange);
+  // }
+  //
+  // watchOnRemote(): void {
+  //   const pattern = this.pattern[this.remote.label];
+  //   debugger;
+  //   this.remote.runChokidar(
+  //     this.remote.base,
+  //     `node_modules/bin/remonade-chokidar.js --pattern ${pattern}`
+  //   )
+  //     .on('ready', this._handleReady)
+  //     .on('add', this._handleAdd)
+  //     .on('change', this._handleChange);
+  // }
+
+  watchFiles(): Volume {
+    chokidar.watch(this.pattern.local)
+      .on('ready', this._handleReady)
+      .on('add', this._handleAdd)
+      .on('change', this._handleChange);
+    return this;
+  }
+
+  // exec(command) {
+  // }
+  //
+  // sync() {
+  //   const command = new Command(this.rsyncCommand);
+  //   comamnd.exec();
+  // }
+
+  // async process() {
+  //   if (!this.executedBeforeOnce) {
+  //     await this.exec(this.command.BeforeOnce);
+  //   }
+  //   await this.exec(this.command.Before);
+  //   await this.exec(this.command.After);
+  //   if (!this.executedAfterOnce) {
+  //     await this.exec(this.command.AfterOnce);
+  //   }
+  // }
   //
   // hasBeforeOnceCommand() {
   //   return Boolean(this.comamnd.beforeOnce);

@@ -8,7 +8,9 @@ export default {
       tasks: [
         {
           immidiate: true,
-          command: 'yarn dev:script'
+          workdir: 'examples',
+          command: 'yarn dev:script',
+          endFlagPattarn: 'bundle\.js'
         }
       ],
       ssh: {
@@ -23,8 +25,9 @@ export default {
       tasks: [
         {
           immidiate: true,
-          workdir: '.',
-          command: 'yarn dev:style'
+          workdir: 'examples',
+          command: 'yarn dev:style',
+          endFlagPattarn: 'Finished \'style\''
         }
       ],
       ssh: {

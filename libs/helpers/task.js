@@ -12,13 +12,30 @@ export default class Task extends EventEmitter {
   immidiate: boolean;
   workdir: string;
   command: string;
+  endFlagPattern: RegExp | null
   ssh: Ssh;
 
-  constructor(immidiate: boolean, workdir: string, command: string) {
+  constructor(
+    immidiate: boolean,
+    workdir: string,
+    command: string,
+    endFlagPattarn: ?string
+  ) {
     super();
     this.immidiate = immidiate;
     this.workdir = workdir;
     this.command = command;
+    this.endFlagPattern = (() => {
+      if (typeof endFlagPattarn === 'string') {
+        return new RegExp(endFlagPattarn);
+      }
+      return null;
+    })();
+  }
+
+  @bind()
+  _handleReady() {
+    this.emit('ready');
   }
 
   @bind()
@@ -36,35 +53,32 @@ export default class Task extends EventEmitter {
     this.emit('error', data.toString());
   }
 
-  process(ssh: Ssh): Promise<*> {
+  process(ssh: Ssh): Task {
     const conn = new Client();
-    console.log(11999);
-    return new Promise((resolve, reject) => {
-      conn.on('ready', async () => {
-        this.emit('ready', this);
-        console.log(999);
-        const exec = conn.exec.bind(conn);
-        try {
-          const stream = await promisify(exec)(`
-            (
-              cd ${this.workdir} &&
-              ${this.command}
-            )
-          `);
 
-          stream
-            .on('ready', resolve)
-            .on('data', this._handleData)
-            .on('end', this._handleEnd)
-            .stderr
-              .on('data', this._handleError);
-        } catch (err) {
-          reject(err);
-        }
-      });
+    conn.on('ready', async () => {
+      this.emit('ready', this);
+      const exec = conn.exec.bind(conn);
+      try {
+        const stream = await promisify(exec)(`
+          (
+            cd ${this.workdir} &&
+            ${this.command}
+          )
+        `);
 
-      conn.connect(ssh);
+        stream
+          .on('ready', this._handleReady)
+          .on('data', this._handleData)
+          .on('end', this._handleEnd)
+          .stderr
+            .on('data', this._handleError);
+      } catch (err) {
+        throw new Error(err);
+      }
     });
 
+    conn.connect(ssh);
+    return this;
   }
 }

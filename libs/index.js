@@ -11,6 +11,7 @@ import Ssh from 'helpers/ssh';
 import Machine from 'helpers/machine';
 import Volume from 'helpers/volume';
 import Task from 'helpers/task';
+import debounce from 'lodash.debounce';
 
 export default class Remonade extends EventEmitter {
   config: Config
@@ -78,6 +79,24 @@ export default class Remonade extends EventEmitter {
       })
     );
 
+    volumes.forEach(volume => {
+      if (volume.from.isLocal()) {
+        volume.watchFiles();
+      } else {
+        const target = machines.find(m => m === volume.from);
+        if (!target) {
+          return;
+        }
+
+        const pattern = volume.pattern[target.label];
+        target.tasks.push(new Task(
+          true,
+          target.base,
+          `node_modules/bin/remonade-chokidar.js --pattern ${pattern}`
+        ));
+      }
+    });
+
     const result = {
       machines: [localMachine, ...machines],
       volumes
@@ -92,6 +111,12 @@ export default class Remonade extends EventEmitter {
 
   start() {
     render(<RemonadeComponent {...this.config}/>);
+
+    // this.config.machines.forEach(machine => {
+    //   machine.on('update', debounce(() => {
+    //     render(<RemonadeComponent {...this.config}/>);
+    //   }, 100));
+    // });
   }
 }
 

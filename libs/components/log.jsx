@@ -29,17 +29,14 @@ export default class Remonade extends Component {
 				return Array(rowLength).fill('');
 			}
 
-			// console.log(Array.from(log).map(line => (
-			// 	chunk(line, colLength).map(group => group.join(''))
-			// )));
 			const newLog = R.flatten(
 				Array.from(log).map(line => (
 					chunk(line, colLength).map(group => group.join(''))
 				))
 			)
 				.reverse()
-				.slice(0, rowLength)
-				.reverse();
+  			.slice(0, rowLength)
+  			.reverse();
 			const filler = Array(rowLength).fill('');
 
 			return [
