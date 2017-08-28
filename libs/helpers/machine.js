@@ -26,14 +26,14 @@ export default class Machine extends EventEmitter {
         const exitTask = new Task(false, '/', 'kill -9 -1');
         exitTask.process((this.ssh: any))
           .on('end', cb);
-      })
+      });
     }
     this.tasks = [];
     this.logs = [];
   }
 
   addTask(task: Task): void {
-    this.tasks.push(task)
+    this.tasks.push(task);
   }
 
   log(logs: Array<string>): void {
