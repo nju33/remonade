@@ -14,25 +14,17 @@ export default class Task extends EventEmitter {
   workdir: string;
   command: string;
   volume: ?Volume;
-  // endFlagPattern: RegExp | null
   ssh: Ssh;
 
   constructor(
     immidiate: boolean,
     workdir: string,
     command: string,
-    // endFlagPattarn: ?string
   ) {
     super();
     this.immidiate = immidiate;
     this.workdir = workdir;
     this.command = command;
-    // this.endFlagPattern = (() => {
-    //   if (typeof endFlagPattarn === 'string') {
-    //     return new RegExp(endFlagPattarn);
-    //   }
-    //   return null;
-    // })();
   }
 
   associate(volume: Volume): Task {

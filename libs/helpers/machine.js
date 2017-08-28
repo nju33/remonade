@@ -56,13 +56,12 @@ export default class Machine extends EventEmitter {
     // if (!this.ssh) {
     //   return;
     // }
-
     this.immidiatelyTasks.forEach(task => {
       task.process((this: any).ssh || ({}: Ssh))
         .on('end', () => {
           this.emit('update');
         })
-        .on('data', async line => {
+        .on('data', line => {
           // this.logs = [...this.logs, line];
           switch (line.trim()) {
           case 'REMONADE_CHOKIDAR:ADD': {
@@ -70,17 +69,20 @@ export default class Machine extends EventEmitter {
           }
           case 'REMONADE_CHOKIDAR:READY':
           case 'REMONADE_CHOKIDAR:CHANGE': {
-            const task = this.tasks.find(task => {
+            const tasks = this.tasks.filter(task => {
               const file = 'node_modules/bin/remonade-chokidar.js';
               return typeof task.command === 'function' ||
                      task.command.trim().startsWith(file);
             });
-            if (task && task.volume) {
-              const command = task.volume.rsyncCommand;
-              const result = await execa.shell(command);
-              console.log(command);
-              this.logs.push(command);
-              this.logs.push(result.stdout);
+            if (tasks.length > 0) {
+              tasks.forEach(async task => {
+                if (task.volume) {
+                  const command = task.volume.rsyncCommand;
+                  const result = await execa.shell(command);
+                  this.logs.push(command);
+                  this.logs.push(result.stdout);
+                }
+              });
             }
             return;
           }

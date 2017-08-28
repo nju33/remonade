@@ -4,17 +4,17 @@ import path from 'path';
 import * as React from 'react';
 import EventEmitter from 'events';
 import {h, render} from 'ink';
-// import pProps from 'p-props';
+import pProps from 'p-props';
 import arrify from 'arrify';
 import RemonadeComponent from 'components/remonade';
 import Ssh from 'helpers/ssh';
 import Machine from 'helpers/machine';
 import Volume from 'helpers/volume';
 import Task from 'helpers/task';
-// import debounce from 'lodash.debounce';
+import debounce from 'lodash.debounce';
 
 export default class Remonade extends EventEmitter {
-  config: Config
+  config: Config;
 
   static async adaptConfig(config: ArgumentConfig) {
     const base = config.base || process.cwd();
@@ -36,12 +36,6 @@ export default class Remonade extends EventEmitter {
         .map(async pairs => {
           const [label, opts] = pairs;
           const ssh = await (new Ssh(opts.ssh)).init();
-          // const machineConfig = await pProps({
-          //   label,
-          //   tasks:
-          //   base: opts.base || null,
-          //   ssh: ssh.init()
-          // });
 
           const machine = new Machine(label, opts.color, opts.base, ssh);
           opts.tasks.forEach(task => {
@@ -71,7 +65,6 @@ export default class Remonade extends EventEmitter {
         }
 
         const volume = new Volume([localMachine, ...machines]);
-        // machines.forEach(machine => volume.set(machine));
 
         await volumeFn(volume);
         return volume;
@@ -80,13 +73,7 @@ export default class Remonade extends EventEmitter {
 
     volumes.forEach(volume => {
       if (volume.from.isLocal()) {
-        const task = new Task(
-          true,
-          localMachine.base,
-          volume._watchFiles
-        );
-        task.associate(volume);
-        localMachine.tasks.push(task);
+        volume.watchFiles();
       } else {
         const target = machines.find(m => m === volume.from);
         if (!target) {
@@ -94,13 +81,11 @@ export default class Remonade extends EventEmitter {
         }
 
         const pattern = volume.pattern[target.label];
-        const task = new Task(
+        target.tasks.push(new Task(
           true,
           target.base,
           `node_modules/bin/remonade-chokidar.js --pattern ${pattern}`
-        );
-        task.associate(volume);
-        target.tasks.push(task);
+        ));
       }
     });
 
@@ -114,27 +99,17 @@ export default class Remonade extends EventEmitter {
   constructor(config: Config) {
     super();
     this.config = config;
-    debugger;
   }
 
   start() {
     render(<RemonadeComponent {...this.config}/>);
 
-    // this.config.machines.forEach(machine => {
-    //   machine.on('update', debounce(() => {
-    //     render(<RemonadeComponent {...this.config}/>);
-    //   }, 100));
-    // });
+    this.config.machines.forEach(machine => {
+      machine.on('update', debounce(() => {
+        render(<RemonadeComponent {...this.config}/>);
+      }, 100));
+    });
   }
 }
 
 process.on('unhandledRejection', console.dir);
-
-// import {
-//   viewSshHostname,
-//   viewSshPort,
-//   viewSshUser,
-//   viewSshIdentifyFile,
-//   viewBaseLocal,
-//   viewBaseRemote
-// } from 'helpers/config';
