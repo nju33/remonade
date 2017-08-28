@@ -11,11 +11,11 @@ const flags = yargs
 
 chokidar.watch(flags.pattern)
   .on('ready', () => {
-    console.log('READY');
+    console.log('REMONADE_CHOKIDAR:READY');
   })
   .on('add', () => {
-    console.log('ADD');
+    console.log('REMONADE_CHOKIDAR:ADD');
   })
   .on('change', () => {
-    console.log('CHANGED');
+    console.log('REMONADE_CHOKIDAR:CHANGE');
   });
