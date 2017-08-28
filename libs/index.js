@@ -80,7 +80,13 @@ export default class Remonade extends EventEmitter {
 
     volumes.forEach(volume => {
       if (volume.from.isLocal()) {
-        volume.watchFiles();
+        const task = new Task(
+          true,
+          localMachine.base,
+          volume._watchFiles
+        );
+        task.associate(volume);
+        localMachine.tasks.push(task);
       } else {
         const target = machines.find(m => m === volume.from);
         if (!target) {
@@ -108,6 +114,7 @@ export default class Remonade extends EventEmitter {
   constructor(config: Config) {
     super();
     this.config = config;
+    debugger;
   }
 
   start() {

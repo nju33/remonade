@@ -60,8 +60,25 @@ export default class Task extends EventEmitter {
     this.emit('error', data.toString());
   }
 
+  @bind()
+  _handleChokidarReady(): void {
+    this.emit('data', 'REMONADE_CHOKIDAR:READY');
+  }
+
+  @bind()
+  _handleChokidarChange(): void {
+    this.emit('data', 'REMONADE_CHOKIDAR:CHANGE');
+  }
+
   process(ssh: Ssh): Task {
     const conn = new Client();
+
+    if (typeof this.command === 'function') {
+      this.command()
+        .on('ready', this._handleChokidarReady)
+        .on('change', this._handleChokidarChange);
+      return this;
+    }
 
     conn.on('ready', async () => {
       this.emit('ready', this);

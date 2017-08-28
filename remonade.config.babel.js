@@ -39,16 +39,16 @@ export default {
   },
   volumes: [
     v => v
-      .local`examples/src/scripts`
-      .webpack`${v.path.local}`,
+      .local`examples/src/scripts/`
+      .webpack`examples/src/scripts/`,
     v => v
-      .webpack`examples/dist/scripts`
-      .local`${v.path.webpack}`,
+      .webpack`examples/dist/scripts/`
+      .local`examples/dist/scripts/`,
     v => v
-      .local`examples/dist/styles`
-      .gulp`${v.path.local}`,
+      .local`examples/src/styles/`
+      .gulp`examples/src/styles/`,
     v => v
-      .gulp`examples/dist/styles`
-      .local`${v.path.gulp}`
+      .gulp`examples/dist/styles/`
+      .local`examples/dist/styles/`
   ]
 };

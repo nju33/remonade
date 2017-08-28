@@ -117,10 +117,10 @@ export default class Volume extends EventEmitter {
     this.emit('ready');
   }
 
-  @bind()
-  _handleAdd(): void {
-    this.emit('add');
-  }
+  // @bind()
+  // _handleAdd(): void {
+  //   this.emit('add');
+  // }
 
   @bind()
   _handleChange(): void {
@@ -146,10 +146,11 @@ export default class Volume extends EventEmitter {
   //     .on('change', this._handleChange);
   // }
 
-  watchFiles(): Volume {
+  @bind()
+  _watchFiles(): Volume {
     chokidar.watch(this.pattern.local)
       .on('ready', this._handleReady)
-      .on('add', this._handleAdd)
+      // .on('add', this._handleAdd)
       .on('change', this._handleChange);
     return this;
   }

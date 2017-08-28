@@ -5,6 +5,7 @@ import Ssh from 'helpers/ssh';
 import type {SshProp} from 'helpers/ssh';
 import Task from 'helpers/task';
 import exitHook from 'async-exit-hook';
+import execa from 'execa';
 
 export default class Machine extends EventEmitter {
   label: string;
@@ -52,16 +53,16 @@ export default class Machine extends EventEmitter {
   }
 
   runImmidiatelyTasks(): void {
-    if (!this.ssh) {
-      return;
-    }
+    // if (!this.ssh) {
+    //   return;
+    // }
 
     this.immidiatelyTasks.forEach(task => {
-      task.process((this: any).ssh)
+      task.process((this: any).ssh || ({}: Ssh))
         .on('end', () => {
           this.emit('update');
         })
-        .on('data', line => {
+        .on('data', async line => {
           // this.logs = [...this.logs, line];
           switch (line.trim()) {
           case 'REMONADE_CHOKIDAR:ADD': {
@@ -71,10 +72,15 @@ export default class Machine extends EventEmitter {
           case 'REMONADE_CHOKIDAR:CHANGE': {
             const task = this.tasks.find(task => {
               const file = 'node_modules/bin/remonade-chokidar.js';
-              return task.command.trim().startsWith(file);
+              return typeof task.command === 'function' ||
+                     task.command.trim().startsWith(file);
             });
             if (task && task.volume) {
-              this.logs.push(task.volume.rsyncCommand);
+              const command = task.volume.rsyncCommand;
+              const result = await execa.shell(command);
+              console.log(command);
+              this.logs.push(command);
+              this.logs.push(result.stdout);
             }
             return;
           }
@@ -104,7 +110,7 @@ export default class Machine extends EventEmitter {
     if (!this.ssh) {
       throw new Error('Trying to remotely access it though it is local');
     }
-    return `${(this.ssh: SshProp).username}@${(this.ssh: SshProp).host}`;
+    return `${(this.ssh: SshProp).user}@${(this.ssh: SshProp).hostname}`;
   }
 
   get identifyFile(): string {
@@ -120,14 +126,4 @@ export default class Machine extends EventEmitter {
     }
     return dir;
   }
-
-  // runChokidar(base: string, command: string): Machine {
-  //   const task = new Task(false, base, command);
-  //   task.process((this.ssh: any))
-  //     .on('data', line => {
-  //     })
-  //     .on('error', line => {
-  //     })
-  //   return this;
-  // }
 }

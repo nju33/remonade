@@ -13,3 +13,6 @@ console.log(1111);
 console.log(2234234);
 
 console.log(1231323131313123);
+console.log(999);
+
+console.log(99998881238);

@@ -32,7 +32,7 @@ export default class Remonade extends Component {
 
     const termSizeData = termSize();
     const remoteLength = props.machines.length;
-    const adjustHeight = remoteLength * 2;
+    const adjustHeight = remoteLength * 1.5;
     this.state = {
       rowLength: Math.floor((termSizeData.rows / remoteLength) - adjustHeight),
       colLength: termSizeData.columns,
@@ -63,7 +63,6 @@ export default class Remonade extends Component {
 
   @bind()
   _updateView() {
-    debugger;
     this.setState({counter: this.state.counter + 1});
   }
 
