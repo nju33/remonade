@@ -44,11 +44,11 @@ export default class Machine extends EventEmitter {
   }
 
   get immidiatelyTasks(): Array<Task> {
-    return this.tasks.filter(task => Boolean(task.immidiate));
+    return this.tasks.filter(task => task.immidiate);
   }
 
   get nonImmidiatelyTasks(): Array<Task> {
-    return this.tasks.filter(task => !Boolean(task.immidiate));
+    return this.tasks.filter(task => !task.immidiate);
   }
 
   runImmidiatelyTasks(): void {
@@ -63,7 +63,26 @@ export default class Machine extends EventEmitter {
         })
         .on('data', line => {
           // this.logs = [...this.logs, line];
-          this.logs.push(line);
+          switch (line.trim()) {
+          case 'REMONADE_CHOKIDAR:ADD': {
+            return;
+          }
+          case 'REMONADE_CHOKIDAR:READY':
+          case 'REMONADE_CHOKIDAR:CHANGE': {
+            const task = this.tasks.find(task => {
+              const file = 'node_modules/bin/remonade-chokidar.js';
+              return task.command.trim().startsWith(file);
+            });
+            if (task && task.volume) {
+              this.logs.push(task.volume.rsyncCommand);
+            }
+            return;
+          }
+          default: {
+            this.logs.push(line);
+          }
+          }
+
           this.emit('update');
         })
         .on('error', line => {
@@ -102,13 +121,13 @@ export default class Machine extends EventEmitter {
     return dir;
   }
 
-  runChokidar(base: string, command: string): Machine {
-    const task = new Task(false, base, command);
-    task.process((this.ssh: any))
-      .on('data', line => {
-      })
-      .on('error', line => {
-      })
-    return this;
-  }
+  // runChokidar(base: string, command: string): Machine {
+  //   const task = new Task(false, base, command);
+  //   task.process((this.ssh: any))
+  //     .on('data', line => {
+  //     })
+  //     .on('error', line => {
+  //     })
+  //   return this;
+  // }
 }

@@ -4,14 +4,14 @@ import path from 'path';
 import * as React from 'react';
 import EventEmitter from 'events';
 import {h, render} from 'ink';
-import pProps from 'p-props';
+// import pProps from 'p-props';
 import arrify from 'arrify';
 import RemonadeComponent from 'components/remonade';
 import Ssh from 'helpers/ssh';
 import Machine from 'helpers/machine';
 import Volume from 'helpers/volume';
 import Task from 'helpers/task';
-import debounce from 'lodash.debounce';
+// import debounce from 'lodash.debounce';
 
 export default class Remonade extends EventEmitter {
   config: Config
@@ -74,7 +74,6 @@ export default class Remonade extends EventEmitter {
         // machines.forEach(machine => volume.set(machine));
 
         await volumeFn(volume);
-        debugger;
         return volume;
       })
     );
@@ -89,11 +88,13 @@ export default class Remonade extends EventEmitter {
         }
 
         const pattern = volume.pattern[target.label];
-        target.tasks.push(new Task(
+        const task = new Task(
           true,
           target.base,
           `node_modules/bin/remonade-chokidar.js --pattern ${pattern}`
-        ));
+        );
+        task.associate(volume);
+        target.tasks.push(task);
       }
     });
 

@@ -63,6 +63,7 @@ export default class Remonade extends Component {
 
   @bind()
   _updateView() {
+    debugger;
     this.setState({counter: this.state.counter + 1});
   }
 

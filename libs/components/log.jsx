@@ -39,9 +39,13 @@ export default class Remonade extends Component {
       }
 
       const newLog = R.flatten(
-        Array.from(log).map(line =>
-          chunk(line, colLength).map(group => group.join(''))
-        )
+        Array.from(log).map(fragment => (
+          fragment.split('\n').map(line => (
+            chunk(line, colLength).map(group => (
+              group.join('')
+            ))
+          ))
+        ))
       )
         .reverse()
         .slice(0, rowLength)

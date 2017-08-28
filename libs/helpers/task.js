@@ -5,6 +5,7 @@ import EventEmitter from 'events';
 import ssh from 'ssh2';
 import bind from 'lodash-decorators/bind';
 import Ssh from 'helpers/ssh';
+import Volume from 'helpers/volume';
 
 const {Client} = ssh;
 
@@ -12,34 +13,40 @@ export default class Task extends EventEmitter {
   immidiate: boolean;
   workdir: string;
   command: string;
-  endFlagPattern: RegExp | null
+  volume: ?Volume;
+  // endFlagPattern: RegExp | null
   ssh: Ssh;
 
   constructor(
     immidiate: boolean,
     workdir: string,
     command: string,
-    endFlagPattarn: ?string
+    // endFlagPattarn: ?string
   ) {
     super();
     this.immidiate = immidiate;
     this.workdir = workdir;
     this.command = command;
-    this.endFlagPattern = (() => {
-      if (typeof endFlagPattarn === 'string') {
-        return new RegExp(endFlagPattarn);
-      }
-      return null;
-    })();
+    // this.endFlagPattern = (() => {
+    //   if (typeof endFlagPattarn === 'string') {
+    //     return new RegExp(endFlagPattarn);
+    //   }
+    //   return null;
+    // })();
+  }
+
+  associate(volume: Volume): Task {
+    this.volume = volume;
+    return this;
   }
 
   @bind()
-  _handleReady() {
+  _handleReady(): void {
     this.emit('ready');
   }
 
   @bind()
-  _handleEnd() {
+  _handleEnd(): void {
     this.emit('end');
   }
 
@@ -72,7 +79,7 @@ export default class Task extends EventEmitter {
           .on('data', this._handleData)
           .on('end', this._handleEnd)
           .stderr
-            .on('data', this._handleError);
+          .on('data', this._handleError);
       } catch (err) {
         throw new Error(err);
       }
