@@ -1,10 +1,10 @@
-import Ssh from 'helpers/ssh';
+// import Ssh from 'helpers/ssh';
 import Task from './task';
 
 describe('Task', () => {
   describe('immidiate', () => {
     let task = null;
-    let ssh = null;
+    // let ssh = null;
     beforeEach(() => {
       task = new Task(true, '/foo', 'echo 1');
       // ssh = new Ssh({
@@ -31,5 +31,28 @@ describe('Task', () => {
       expect(handleError).toHaveBeenCalled();
       expect(handleError.mock.calls[0][0]).toBe('error');
     });
-  })
+
+    test('ready event', () => {
+      const cb = jest.fn();
+      task.on('ready', cb);
+      task.emit('ready');
+      expect(cb).toBeCalled();
+    });
+
+    test('ready end', () => {
+      const cb = jest.fn();
+      task.on('end', cb);
+      task.emit('end');
+      expect(cb).toBeCalled();
+    });
+
+    test('ready data', () => {
+      const cb = jest.fn();
+      task.on('data', cb);
+      task.emit('data', 'data');
+
+      expect(cb).toBeCalled();
+      expect(cb).toBeCalledWith('data');
+    });
+  });
 });

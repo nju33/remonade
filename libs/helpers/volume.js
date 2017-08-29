@@ -5,7 +5,6 @@ import path from 'path';
 import Rsync from 'rsync';
 import chokidar from 'chokidar';
 import bind from 'lodash-decorators/bind';
-import ExitHook from 'async-exit-hook';
 import Machine from 'helpers/machine';
 
 export default class Volume extends EventEmitter {

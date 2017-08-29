@@ -25,8 +25,9 @@ export default class Machine extends EventEmitter {
       this.ssh = ssh;
       exitHook(cb => {
         const exitTask = new Task(false, '/', 'kill -9 -1');
-        exitTask.process((this.ssh: any))
-          .on('end', cb);
+        try {
+          exitTask.process((this.ssh: any)).on('end', cb);
+        } catch (_) {}
       });
     }
     this.tasks = [];

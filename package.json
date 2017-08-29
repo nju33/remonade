@@ -13,7 +13,7 @@
 		"build": "gulp libs",
 		"test": "[ \"true\" = \"$CI\" ] && yarn jest || yarn local:jest",
 		"jest": "jest && codecov",
-		"local:jest": "jest --watch"
+		"local:jest": "jest"
 	},
 	"moduleRoots": [
 		"libs"

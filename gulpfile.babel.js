@@ -12,8 +12,10 @@ function handleError(err) {
   beeper(2);
 }
 
+const libSrc = ['libs/**/*.+(js|jsx)', '!libs/**/*.test.js'];
+
 gulp.task('libs', () => (
-  gulp.src('libs/**/*.+(js|jsx)')
+  gulp.src(libSrc)
     .pipe(plumber({errorHandler: handleError}))
     .pipe(cached('lib'))
     .pipe(sourcemaps.init())
@@ -23,5 +25,5 @@ gulp.task('libs', () => (
 ));
 
 gulp.task('watch', ['libs'], () => {
-  gulp.watch('libs/**/*.+(js|jsx)', ['libs']);
+  gulp.watch(libSrc, ['libs']);
 });
