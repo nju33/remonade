@@ -1,11 +1,15 @@
 /* @flow */
 
+import fs from 'fs';
+import path from 'path';
 import EventEmitter from 'events';
+import {promisify} from 'util';
 import Ssh from 'helpers/ssh';
 import type {SshProp} from 'helpers/ssh';
 import Task from 'helpers/task';
 import exitHook from 'async-exit-hook';
 import execa from 'execa';
+import tmp from 'tmp';
 
 export default class Machine extends EventEmitter {
   label: string;
@@ -14,6 +18,7 @@ export default class Machine extends EventEmitter {
   ssh: ?Ssh;
   tasks: Array<Task>;
   logs: Array<string>;
+  logfilename: string;
 
   constructor(label: string, color: ?string, base: string, ssh: ?Ssh) {
     super();
@@ -34,15 +39,29 @@ export default class Machine extends EventEmitter {
     this.logs = [];
   }
 
+  async init(dir: string): Promise<void> {
+    const mkdir = promisify(tmp.dir);
+    const mkfile = promisify(tmp.file);
+    const filepath = await mkfile({
+      prefix: this.label + '-',
+      dir,
+      postfix: '.log'
+    });
+    this.logfilename = filepath;
+  }
+
   addTask(task: Task): void {
     this.tasks.push(task);
   }
 
-  log(logs: Array<string>): void {
+  async log(logs: Array<string>): Promise<void> {
     if (typeof logs === 'string') {
       logs = [logs];
     }
     this.logs = [...this.logs, ...logs];
+    try {
+      await promisify(fs.appendFile)(this.logfilename, logs.join('\n'))
+    } catch (_) {}
   }
 
   get immidiatelyTasks(): Array<Task> {
@@ -77,54 +96,52 @@ export default class Machine extends EventEmitter {
               })
               .filter(task => task.immidiate);
             if (tasks.length > 0) {
-              // this.logs.push('CHANGEREADY');
               await Promise.all(
                 tasks.map(async task => {
                   if (task.volume) {
                     const command = task.volume.rsyncCommand;
                     try {
                       const result = await execa.shell(command);
-                      this.logs.push('$ ' + command);
-                      this.logs.push(result.stdout);
+                      this.log('$ ' + command);
+                      this.log(result.stdout);
                     } catch (err) {
                       throw new Error(err);
                     }
                   }
                 })
               );
-              // this.runNonImmidiatelyTasks();
+              this.runNonImmidiatelyTasks();
             }
             return;
           }
           default: {
-            this.logs.push(line);
+            this.log(line);
           }
           }
 
           this.emit('update');
         })
         .on('error', line => {
-          this.logs.push(line);
+          this.log(line);
           this.emit('update');
         });
     });
   }
 
-  // runNonImmidiatelyTasks(): void {
-  //   this.nonImmidiatelyTasks.forEach(task => {
-  //     this.logs.push('$ ' + task.command);
-  //     this.emit('update');
-  //     task.process((this: any).ssh || ({}: Ssh))
-  //       .on('ready', () => {
-  //         this.logs.push('$ ' + task.command);
-  //         this.emit('update');
-  //       })
-  //       .on('data', line => {
-  //         this.logs.push(line);
-  //         this.emit('update');
-  //       });
-  //   });
-  // }
+  runNonImmidiatelyTasks(): void {
+    this.nonImmidiatelyTasks.forEach(task => {
+      this.log('$ ' + task.command);
+      this.emit('update');
+      task.process((this: any).ssh || ({}: Ssh))
+        .on('end', () => {
+          task.removeAllListeners();
+        })
+        .on('data', line => {
+          this.log(line);
+          this.emit('update');
+        });
+    });
+  }
 
   get type(): string {
     return typeof this.ssh === 'undefined' ? 'local' : 'remote';

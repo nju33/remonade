@@ -2,8 +2,8 @@
 /* eslint no-unused-vars: 0 */
 
 interface SshConfig {
-  host: string,
-  username: string,
+  hostname: string,
+  user: string,
   password: ?string,
   agent: ?string,
   port: number,
