@@ -79,7 +79,7 @@ export default class Machine extends EventEmitter {
               const command = task.volume.rsyncCommand;
               const result = await execa.shell(command);
               console.log(command);
-              this.logs.push(command);
+              this.logs.push('$ ' + command);
               this.logs.push(result.stdout);
             }
             return;
