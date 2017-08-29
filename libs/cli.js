@@ -1,9 +1,6 @@
 #!/usr/bin/env node
-
 /* @flow */
 
-// import path from 'path';
-// import yargs from 'yargs';
 import Liftoff from 'liftoff';
 import interpret from 'interpret';
 import minimist from 'minimist';

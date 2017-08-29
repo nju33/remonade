@@ -16,3 +16,9 @@ console.log(1231323131313123);
 console.log(999);
 
 console.log(99998881238);
+console.log('aaa12312312311111111');
+console.log('aaa12312312311111111');
+console.log('aaa12312312311111111');
+console.log('aaa12312312311111111');
+console.log('aaa12312312311111111');
+console.log(12312319999);

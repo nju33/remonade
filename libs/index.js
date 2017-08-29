@@ -4,17 +4,16 @@ import path from 'path';
 import * as React from 'react';
 import EventEmitter from 'events';
 import {h, render} from 'ink';
-// import pProps from 'p-props';
 import arrify from 'arrify';
 import RemonadeComponent from 'components/remonade';
 import Ssh from 'helpers/ssh';
 import Machine from 'helpers/machine';
 import Volume from 'helpers/volume';
 import Task from 'helpers/task';
-// import debounce from 'lodash.debounce';
+import debounce from 'lodash.debounce';
 
 export default class Remonade extends EventEmitter {
-  config: Config
+  config: Config;
 
   static async adaptConfig(config: ArgumentConfig) {
     const base = config.base || process.cwd();
@@ -36,12 +35,6 @@ export default class Remonade extends EventEmitter {
         .map(async pairs => {
           const [label, opts] = pairs;
           const ssh = await (new Ssh(opts.ssh)).init();
-          // const machineConfig = await pProps({
-          //   label,
-          //   tasks:
-          //   base: opts.base || null,
-          //   ssh: ssh.init()
-          // });
 
           const machine = new Machine(label, opts.color, opts.base, ssh);
           opts.tasks.forEach(task => {
@@ -71,7 +64,6 @@ export default class Remonade extends EventEmitter {
         }
 
         const volume = new Volume([localMachine, ...machines]);
-        // machines.forEach(machine => volume.set(machine));
 
         await volumeFn(volume);
         return volume;
@@ -114,7 +106,6 @@ export default class Remonade extends EventEmitter {
   constructor(config: Config) {
     super();
     this.config = config;
-    debugger;
   }
 
   start() {
@@ -129,12 +120,3 @@ export default class Remonade extends EventEmitter {
 }
 
 process.on('unhandledRejection', console.dir);
-
-// import {
-//   viewSshHostname,
-//   viewSshPort,
-//   viewSshUser,
-//   viewSshIdentifyFile,
-//   viewBaseLocal,
-//   viewBaseRemote
-// } from 'helpers/config';

@@ -22,8 +22,8 @@ describe('Machine', () => {
 
     beforeEach(() => {
       const ssh = new Ssh({
-        username: 'foo',
-        host: '0.0.0.0',
+        user: 'foo',
+        hostname: '0.0.0.0',
         identifyFile: 'aaa/bbb/ccc'
       });
       machine = new Machine('remote', undefined, '/', ssh);

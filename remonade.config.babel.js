@@ -9,14 +9,13 @@ export default {
         {
           immidiate: true,
           workdir: 'examples',
-          command: 'yarn dev:script',
-          endFlagPattarn: 'bundle\.js'
+          command: 'yarn dev:script'
         }
       ],
       ssh: {
         hostname: '54.64.238.197',
         user: 'remonade',
-        identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
+        identifyFile: process.env.HOME + '/.ssh/remonade'
       }
     },
     gulp: {
@@ -33,7 +32,7 @@ export default {
       ssh: {
         hostname: '54.64.238.197',
         user: 'remonade',
-        identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
+        identifyFile: process.env.HOME + '/.ssh/remonade'
       }
     }
   },

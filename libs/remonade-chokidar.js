@@ -1,7 +1,9 @@
 #!/usr/bin/env node
+/* @flow */
 
 import yargs from 'yargs';
 import chokidar from 'chokidar';
+import debounce from 'lodash.debounce';
 
 const flags = yargs
   .option('pattern', {
@@ -10,12 +12,12 @@ const flags = yargs
   .argv;
 
 chokidar.watch(flags.pattern)
-  .on('ready', () => {
+  .on('ready', debounce(() => {
     console.log('REMONADE_CHOKIDAR:READY');
-  })
-  .on('add', () => {
+  }, 100))
+  .on('add', debounce(() => {
     console.log('REMONADE_CHOKIDAR:ADD');
-  })
-  .on('change', () => {
+  }, 100))
+  .on('change', debounce(() => {
     console.log('REMONADE_CHOKIDAR:CHANGE');
-  });
+  }, 100));
