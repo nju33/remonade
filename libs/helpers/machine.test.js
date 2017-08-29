@@ -59,6 +59,11 @@ describe('Machine', () => {
 
   describe('common', () => {
     let machine = null;
+    /* eslint-disable */
+    let task1 = null;
+    let task2 = null;
+    let task3 = null;
+    /* eslint-enable */
 
     beforeEach(() => {
       const ssh = new Ssh({
@@ -67,9 +72,9 @@ describe('Machine', () => {
         identifyFile: 'aaa/bbb/ccc'
       });
       machine = new Machine('remote', undefined, '/', ssh);
-      machine.tasks.push(new Task(true, '', ''));
-      machine.tasks.push(new Task(true, '', ''));
-      machine.tasks.push(new Task(false, '', ''));
+      machine.tasks.push((task1 = new Task(true, '', '')));
+      machine.tasks.push((task2 = new Task(true, '', '')));
+      machine.tasks.push((task3 = new Task(false, '', '')));
     });
 
     test('logs', () => {
@@ -90,5 +95,9 @@ describe('Machine', () => {
     test('nonImmidiatelyTasks', () => {
       expect(machine.nonImmidiatelyTasks.length).toBe(1);
     });
+
+    // test('process', () => {
+    //   machine.runImmidiatelyTasks();
+    // });
   });
 });

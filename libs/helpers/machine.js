@@ -62,31 +62,37 @@ export default class Machine extends EventEmitter {
         .on('end', () => {
           this.emit('update');
         })
-        .on('data', line => {
+        .on('data', async line => {
           switch (line.trim()) {
           case 'REMONADE_CHOKIDAR:ADD': {
             return;
           }
           case 'REMONADE_CHOKIDAR:READY':
           case 'REMONADE_CHOKIDAR:CHANGE': {
-            const tasks = this.tasks.filter(task => {
-              const file = 'node_modules/bin/remonade-chokidar.js';
-              return typeof task.command === 'function' ||
-                     task.command.trim().startsWith(file);
-            });
+            const tasks = this.tasks
+              .filter(task => {
+                const file = 'node_modules/bin/remonade-chokidar.js';
+                return typeof task.command === 'function' ||
+                       task.command.trim().startsWith(file);
+              })
+              .filter(task => task.immidiate);
             if (tasks.length > 0) {
-              tasks.forEach(async task => {
-                if (task.volume) {
-                  const command = task.volume.rsyncCommand;
-                  try {
-                    const result = await execa.shell(command);
-                    this.logs.push('$ ' + command);
-                    this.logs.push(result.stdout);
-                  } catch (err) {
-                    throw new Error(err);
+              // this.logs.push('CHANGEREADY');
+              await Promise.all(
+                tasks.map(async task => {
+                  if (task.volume) {
+                    const command = task.volume.rsyncCommand;
+                    try {
+                      const result = await execa.shell(command);
+                      this.logs.push('$ ' + command);
+                      this.logs.push(result.stdout);
+                    } catch (err) {
+                      throw new Error(err);
+                    }
                   }
-                }
-              });
+                })
+              );
+              // this.runNonImmidiatelyTasks();
             }
             return;
           }
@@ -103,6 +109,22 @@ export default class Machine extends EventEmitter {
         });
     });
   }
+
+  // runNonImmidiatelyTasks(): void {
+  //   this.nonImmidiatelyTasks.forEach(task => {
+  //     this.logs.push('$ ' + task.command);
+  //     this.emit('update');
+  //     task.process((this: any).ssh || ({}: Ssh))
+  //       .on('ready', () => {
+  //         this.logs.push('$ ' + task.command);
+  //         this.emit('update');
+  //       })
+  //       .on('data', line => {
+  //         this.logs.push(line);
+  //         this.emit('update');
+  //       });
+  //   });
+  // }
 
   get type(): string {
     return typeof this.ssh === 'undefined' ? 'local' : 'remote';

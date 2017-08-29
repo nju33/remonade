@@ -25,8 +25,17 @@ export default {
         {
           immidiate: true,
           workdir: 'examples',
-          command: 'yarn dev:style',
-          endFlagPattarn: 'Finished \'style\''
+          command: 'yarn dev:style'
+        },
+        {
+          immidiate: false,
+          workdir: 'examples',
+          command: 'echo 1'
+        },
+        {
+          immidiate: false,
+          workdir: 'examples',
+          command: 'echo 2'
         }
       ],
       ssh: {

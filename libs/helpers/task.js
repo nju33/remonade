@@ -73,7 +73,6 @@ export default class Task extends EventEmitter {
     }
 
     conn.on('ready', async () => {
-      this.emit('ready', this);
       const exec = conn.exec.bind(conn);
       try {
         const stream = await promisify(exec)(`
@@ -87,6 +86,9 @@ export default class Task extends EventEmitter {
           .on('ready', this._handleReady)
           .on('data', this._handleData)
           .on('end', this._handleEnd)
+          .on('close', () => {
+            conn.end();
+          })
           .stderr
           .on('data', this._handleError);
       } catch (err) {
