@@ -1,7 +1,6 @@
 #!/usr/bin/env node
+/* @flow */
 
-import path from 'path';
-import yargs from 'yargs';
 import Liftoff from 'liftoff';
 import interpret from 'interpret';
 import minimist from 'minimist';
@@ -18,7 +17,7 @@ cli.launch({
   cwd: argv.cwd,
   configPath: argv.gulpfile,
   require: argv.require,
-  completion: argv.completion,
+  completion: argv.completion
 }, async env => {
   const config = await (async config => {
     let result = null;

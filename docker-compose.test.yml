@@ -1,0 +1,8 @@
+version: '3'
+services:
+  ssh:
+    image: rastasheep/ubuntu-sshd
+    ports:
+      - '50022:22'
+    volumes:
+      - './.docker/.ssh:/root/.ssh'

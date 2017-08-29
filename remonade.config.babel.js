@@ -1,52 +1,62 @@
 export default {
-  ssh: {
-    hostname: '54.64.238.197',
-    user: 'remonade',
-    identifyFile: process.env.HOME + '/.ssh/remonade_ec2'
-  },
-  base: {
-    local: __dirname,
-    remote: '/home/remonade/remonade'
+  base: __dirname,
+  color: 'green',
+  machines: {
+    webpack: {
+      base: '/home/remonade/remonade/',
+      color: 'blue',
+      tasks: [
+        {
+          immidiate: true,
+          workdir: 'examples',
+          command: 'yarn dev:script'
+        }
+      ],
+      ssh: {
+        hostname: '54.64.238.197',
+        user: 'remonade',
+        identifyFile: process.env.HOME + '/.ssh/remonade'
+      }
+    },
+    gulp: {
+      base: '/home/remonade/remonade/',
+      color: 'red',
+      tasks: [
+        {
+          immidiate: true,
+          workdir: 'examples',
+          command: 'yarn dev:style'
+        },
+        {
+          immidiate: false,
+          workdir: 'examples',
+          command: 'echo 1'
+        },
+        {
+          immidiate: false,
+          workdir: 'examples',
+          command: 'echo 2'
+        }
+      ],
+      ssh: {
+        hostname: '54.64.238.197',
+        user: 'remonade',
+        identifyFile: process.env.HOME + '/.ssh/remonade'
+      }
+    }
   },
   volumes: [
-    volume => volume
-                .remote`examples/dist/`
-                .local`examples/dist/`,
-    volume => volume
-                .local`examples/src/`
-                .remote`examples/src/`
-                .beforeSync`
-                  (cd examples && node /home/remonade/remonade/examples/node_modules/tslint)
-                `
-                .beforeSyncOnce`
-                  (cd examples && node /home/remonade/remonade/examples/node_modules/.bin/webpack -w)
-                `
-                // .afterSync`tsc examples/src/*.ts --outDir dist`,
-    // {
-    //   main: 'local',
-    //   commands: [
-    //     'yarn tsc'
-    //   ],
-    //   local: 'src/scripts',
-    //   remote: 'remote/scripts'
-    // },
-    // {
-    //   main: 'remote'
-    //   remote: 'remote/scripts/**/*.js',
-    //   local: 'dist/'
-    // }
-    // {
-    //   main: 'local',
-    //   commands: [
-    //     'yarn gulp styles'
-    //   ],
-    //   local: 'src/styles',
-    //   remote: 'remote/styles'
-    // }
-  ],
-  commands: [
-    'echo 1',
-    'sleep 3',
-    'tsc --watch'
+    v => v
+      .local`examples/src/scripts/`
+      .webpack`examples/src/scripts/`,
+    v => v
+      .webpack`examples/dist/scripts/`
+      .local`examples/dist/scripts/`,
+    v => v
+      .local`examples/src/styles/`
+      .gulp`examples/src/styles/`,
+    v => v
+      .gulp`examples/dist/styles/`
+      .local`examples/dist/styles/`
   ]
 };

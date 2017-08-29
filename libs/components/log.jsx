@@ -1,61 +1,89 @@
-import path from 'path';
-import {h, Component, Text} from 'ink';
+/* @flow */
+
+import * as React from 'react';
+import {h, Component} from 'ink';
 import R from 'ramda';
+import chalk from 'chalk';
 import chunk from 'lodash.chunk';
-import chokidar from 'chokidar';
-import termSize from 'term-size';
-import execa from 'execa';
-import Subject from 'components/subject';
-import RemoteMachine from 'helpers/remote-machine';
-import Command from 'helpers/command';
-import Cup from 'helpers/cup';
-import Rsync from 'helpers/rsync';
-import colorLog from 'helpers/color-log';
 
 export default class Remonade extends Component {
-	constructor(props) {
-		super(props);
+  props: {
+    rowLength: number,
+    colLength: number,
+    log: Array<string>
+  };
 
-		this.state = {
-			log: []
-		};
-	}
-
-	render() {
+  render() {
     const {rowLength, colLength, log} = this.props;
 
-		const nextLog = (() => {
-			if (log.length === 0) {
-				return Array(rowLength).fill('');
-			}
+    const nextLog = (() => {
+      if (log.length === 0) {
+        return Array(rowLength).fill('');
+      }
 
-			// console.log(Array.from(log).map(line => (
-			// 	chunk(line, colLength).map(group => group.join(''))
-			// )));
-			const newLog = R.flatten(
-				Array.from(log).map(line => (
-					chunk(line, colLength).map(group => group.join(''))
-				))
-			)
-				.reverse()
-				.slice(0, rowLength)
-				.reverse();
-			const filler = Array(rowLength).fill('');
+      const newLog = R.flatten(
+        Array.from(log).map(fragment => (
+          fragment.split('\n').map(line => (
+            chunk(line, colLength).map((() => {
+              let isCommand = false;
 
-			return [
-				...newLog,
-				...filler
-			].slice(0, rowLength);
-		})();
+              return group => {
+                let line = group.join('');
+                if (!isCommand && /^\$.+/.test(line)) {
+                  isCommand = true;
+                } else if (isCommand) {
+                  line = '» ' + line;
+                }
+                return line;
+              }
+            })())
+          ))
+        ))
+      )
+        .reverse()
+        .slice(0, rowLength)
+        .reverse();
+      const filler = Array(rowLength).fill('');
 
-		return (
+      return [
+        ...newLog,
+        ...filler
+      ]
+        .slice(0, rowLength)
+        .map(line => (
+          line
+            .replace(/[\w.-_/:@]+|".+"|'.+'|^(?:\$|»).+/g, matches => {
+              if (/^(?:\$|»).+/.test(matches)) {
+                return chalk.gray(matches);
+              } else if (/^\d+$/.test(matches)) {
+                return chalk.blue(matches);
+              } else if (/^[\w.-_/:@]+\.(?!\.)([\w.-_/:@]+(?:\.(?!\.))?){2,}$/.test(matches)) {
+                if (matches.split('.').some(p => isNaN(Number(p)))) {
+                  return chalk.yellow(matches);
+                }
+                return chalk.blue(matches);
+              } else if (/(.+\/.+)+|^(\/.+)+/.test(matches)) {
+                return chalk.yellow(matches);
+              }
+              return matches;
+            })
+        ));
+    })();
+
+    return (
       <div>
         {
           nextLog.map(line => (
-            <div>{line}</div>
+            (
+              /* eslint-disable */
+                <div>
+                  {line}
+                </div>
+              /* eslint-enable */
+            )
           ))
         }
       </div>
-    )
-	}
+    );
+  }
 }

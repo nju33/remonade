@@ -1,0 +1,22 @@
+{
+  "parser": "babel-eslint",
+  "plugins": ["flowtype", "jest"],
+  "extends": ["xo/esnext", "xo-react/space", "plugin:flowtype/recommended"],
+  "env": {
+    "jest/globals": true
+  },
+  "settings": {
+    "react": {
+      "pragma": "h"
+    }
+  },
+  "rules": {
+    "flowtype/define-flow-type": 1,
+    "flowtype/use-flow-type": 1,
+    "no-unused-vars": ["error", {
+      varsIgnorePattern: "^React$"
+    }],
+    "indent": ["error", 2],
+    "capitalized-comments": ["error", "never"]
+  }
+}

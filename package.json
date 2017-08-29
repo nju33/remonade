@@ -1,6 +1,6 @@
 {
-	"name": "ink-test",
-	"version": "1.0.0",
+	"name": "remonade",
+	"version": "2.0.0",
 	"main": "index.js",
 	"license": "MIT",
 	"bin": {
@@ -10,42 +10,68 @@
 	"scripts": {
 		"cli": "node -r babel-register libs/cli.js",
 		"example": "node -r babel-register examples/example.js",
-		"build": "gulp libs"
+		"build": "gulp libs",
+		"test": "[ \"true\" = \"$CI\" ] && yarn jest || yarn local:jest",
+		"jest": "jest && codecov",
+		"local:jest": "jest"
 	},
 	"moduleRoots": [
 		"libs"
 	],
-	"pkg": {
-		"scripts": "dist/**/*.js",
-		"___assets": "views/**/*"
+	"jest": {
+		"moduleNameMapper": {
+			"^helpers/(.+)": "<rootDir>/libs/helpers/$1"
+		},
+		"moduleFileExtensions": [
+			"js",
+			"json"
+		],
+		"coverageDirectory": "./coverage/",
+		"collectCoverage": true
 	},
 	"devDependencies": {
+		"babel-eslint": "^7.2.3",
 		"babel-plugin-module-resolver": "^2.7.1",
+		"babel-plugin-transform-class-properties": "^6.24.1",
+		"babel-plugin-transform-decorators-legacy": "^1.3.4",
+		"babel-plugin-transform-object-rest-spread": "^6.26.0",
 		"babel-plugin-transform-react-jsx": "^6.24.1",
 		"babel-preset-env": "^1.6.0",
+		"babel-preset-flow": "^6.23.0",
 		"babel-register": "^6.24.1",
 		"beeper": "^1.1.1",
+		"codecov": "^2.3.0",
+		"eslint": "^4.5.0",
+		"eslint-config-xo": "^0.18.2",
+		"eslint-config-xo-react": "^0.13.0",
+		"eslint-plugin-flowtype": "^2.35.0",
+		"eslint-plugin-jest": "^20.0.3",
+		"eslint-plugin-jsx-a11y": "^6.0.2",
+		"eslint-plugin-react": "^7.3.0",
+		"flow-bin": "^0.53.1",
 		"gulp": "^3.9.1",
 		"gulp-babel": "^7.0.0",
 		"gulp-cached": "^1.1.1",
 		"gulp-plumber": "^1.1.0",
 		"gulp-sourcemaps": "^2.6.0",
+		"jest": "^20.0.4",
 		"pretty-error": "^2.1.1"
 	},
 	"dependencies": {
+		"arrify": "^1.0.1",
 		"async-exit-hook": "^2.0.1",
 		"chokidar": "^1.7.0",
 		"execa": "^0.8.0",
-		"exit-hook": "^1.1.1",
 		"ink": "^0.3.1",
 		"interpret": "^1.0.3",
 		"liftoff": "^2.3.0",
+		"lodash-decorators": "^4.4.1",
 		"lodash.chunk": "^4.2.0",
 		"lodash.debounce": "^4.0.8",
 		"minimist": "^1.2.0",
-		"p-props": "^1.0.0",
 		"p-series": "^1.0.0",
 		"ramda": "^0.24.1",
+		"react": "^15.6.1",
 		"rsync": "^0.6.1",
 		"ssh2": "^0.5.5",
 		"term-size": "^1.2.0",
