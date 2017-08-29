@@ -1,4 +1,5 @@
 import Ssh from 'helpers/ssh';
+import Task from 'helpers/task';
 import Machine from './machine';
 
 describe('Machine', () => {
@@ -14,6 +15,24 @@ describe('Machine', () => {
 
     it('is local', () => {
       expect(machine.isLocal()).toBeTruthy();
+    });
+
+    test('throw when getting userHost', () => {
+      expect(() => {
+        // eslint-disable-next-line no-unused-expressions
+        machine.userHost;
+      }).toThrow();
+    });
+
+    test('throw when getting identifyFile', () => {
+      expect(() => {
+        // eslint-disable-next-line no-unused-expressions
+        machine.identifyFile;
+      }).toThrow();
+    });
+
+    test('getRsyncPath', () => {
+      expect(machine.getRsyncPath('/')).toBe('/');
     });
   });
 
@@ -43,11 +62,14 @@ describe('Machine', () => {
 
     beforeEach(() => {
       const ssh = new Ssh({
-        username: 'foo',
-        host: '0.0.0.0',
+        user: 'foo',
+        hostname: '0.0.0.0',
         identifyFile: 'aaa/bbb/ccc'
       });
       machine = new Machine('remote', undefined, '/', ssh);
+      machine.tasks.push(new Task(true, '', ''));
+      machine.tasks.push(new Task(true, '', ''));
+      machine.tasks.push(new Task(false, '', ''));
     });
 
     test('logs', () => {
@@ -55,6 +77,18 @@ describe('Machine', () => {
       machine.log(['bar', 'baz']);
 
       expect(machine.logs.length).toBe(3);
+    });
+
+    test('getRsyncPath', () => {
+      expect(machine.getRsyncPath('/home')).toBe('foo@0.0.0.0:/home');
+    });
+
+    test('immidiatelyTasks', () => {
+      expect(machine.immidiatelyTasks.length).toBe(2);
+    });
+
+    test('nonImmidiatelyTasks', () => {
+      expect(machine.nonImmidiatelyTasks.length).toBe(1);
     });
   });
 });

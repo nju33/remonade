@@ -1,4 +1,5 @@
 // import Ssh from 'helpers/ssh';
+import Volume from 'helpers/volume';
 import Task from './task';
 
 describe('Task', () => {
@@ -32,27 +33,60 @@ describe('Task', () => {
       expect(handleError.mock.calls[0][0]).toBe('error');
     });
 
+    test('associate volume', () => {
+      const volume = new Volume([]);
+      task.associate(volume);
+      expect(task.volume).toBe(volume);
+    });
+
     test('ready event', () => {
       const cb = jest.fn();
       task.on('ready', cb);
-      task.emit('ready');
+      task._handleReady('ready');
       expect(cb).toBeCalled();
     });
 
-    test('ready end', () => {
+    test('end event', () => {
       const cb = jest.fn();
       task.on('end', cb);
-      task.emit('end');
+      task._handleEnd('end');
       expect(cb).toBeCalled();
     });
 
-    test('ready data', () => {
+    test('data event', () => {
       const cb = jest.fn();
       task.on('data', cb);
-      task.emit('data', 'data');
+      task._handleData('data', 'data');
 
       expect(cb).toBeCalled();
       expect(cb).toBeCalledWith('data');
+    });
+
+    test('error event', () => {
+      const cb = jest.fn();
+      task.on('error', cb);
+      task._handleError('error', 'error');
+
+      expect(cb).toBeCalled();
+      expect(cb).toBeCalledWith('error');
+    });
+
+    test('REMONADE_CHOKIDAR:READY event', () => {
+      const cb = jest.fn();
+      task.on('data', cb);
+      task._handleChokidarReady();
+
+      expect(cb).toBeCalled();
+      expect(cb).toBeCalledWith('REMONADE_CHOKIDAR:READY');
+    });
+
+    test('REMONADE_CHOKIDAR:CHANGE event', () => {
+      const cb = jest.fn();
+      task.on('data', cb);
+      task._handleChokidarChange();
+
+      expect(cb).toBeCalled();
+      expect(cb).toBeCalledWith('REMONADE_CHOKIDAR:CHANGE');
     });
   });
 });
