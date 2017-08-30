@@ -87,6 +87,10 @@ export default class Machine extends EventEmitter {
           if (task.volume) {
             const command = task.volume.rsyncCommand;
             try {
+              if (process.env.NODE_ENV === 'test') {
+                this.log(['test']);
+                return;
+              }
               const result = await execa.shell(command);
               this.log([
                 '$ ' + command,
@@ -137,7 +141,7 @@ export default class Machine extends EventEmitter {
 
   runNonImmidiatelyTasks(): void {
     this.nonImmidiatelyTasks.forEach(task => {
-      this.log('$ ' + task.command);
+      this.log(['$ ' + task.command]);
       this.emit('update');
       task.process((this: any).ssh || ({}: Ssh))
         .on('end', () => {

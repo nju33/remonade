@@ -125,6 +125,83 @@ describe('Machine', () => {
 
         expect(_runTasks).toHaveBeenCalledTimes(2);
       });
+
+      test('data event in case of error', () => {
+        const task = new EventEmitter();
+        task.process = jest.fn().mockReturnThis();
+        Object.defineProperty(machine, 'immidiatelyTasks', {
+          get: jest.fn(() => [task])
+        });
+
+        const log = jest.spyOn(machine, 'log');
+        machine.runImmidiatelyTasks();
+        task.emit('error', 'error');
+
+        expect(log).toHaveBeenCalledWith('error');
+      });
+
+      test('data event in case of end', () => {
+        const task = new EventEmitter();
+        task.process = jest.fn().mockReturnThis();
+        Object.defineProperty(machine, 'immidiatelyTasks', {
+          get: jest.fn(() => [task])
+        });
+        const handleUpdate = jest.fn();
+
+        machine.on('update', handleUpdate);
+        machine.runImmidiatelyTasks();
+        task.emit('end');
+        expect(handleUpdate).toHaveBeenCalled();
+      });
+
+      test('runNonImmidiatelyTasks from runImmidiatelyTasks', async () => {
+        const task = new EventEmitter();
+        task.immidiate = true;
+        task.process = jest.fn().mockReturnThis();
+        task.command = jest.fn();
+        task.volume = {};
+        const task2 = new EventEmitter();
+        task2.immidiate = false;
+        task2.process = jest.fn().mockReturnThis();
+        task2.command = jest.fn();
+        task2.volume = {};
+
+        machine.tasks = [task, task2];
+        jest.mock('execa', () => {
+          shell: jest.fn().mockImplementation(() => Promise.resolve())
+        });
+
+        // Object.defineProperty(machine, 'immidiatelyTasks', {
+        //   get: jest.fn(() => [task, task2])
+        // });
+
+        const run = jest.spyOn(machine, 'runNonImmidiatelyTasks');
+        await machine._runTasks();
+        // expect(() => {
+        //   task.emit('data', 'REMONADE_CHOKIDAR:CHANGE');
+        // }).toThrow();
+        expect(run).toHaveBeenCalled();
+      });
+
+      test('runNonImmidiatelyTasks', () => {
+        const task = new EventEmitter();
+        task.process = jest.fn().mockReturnThis();
+        Object.defineProperty(machine, 'nonImmidiatelyTasks', {
+          get: jest.fn(() => [task])
+        });
+
+        const log = jest.spyOn(machine, 'log');
+        const removeAllListeners = jest.spyOn(task, 'removeAllListeners');
+        const handleUpdate = jest.fn();
+        machine.on('update', handleUpdate);
+        machine.runNonImmidiatelyTasks();
+        task.emit('data', 'data');
+        task.emit('end');
+
+        expect(log).toHaveBeenCalledWith('data');
+        expect(removeAllListeners).toHaveBeenCalled();
+        expect(handleUpdate).toHaveBeenCalled();
+      });
     });
   });
 });
