@@ -14,7 +14,6 @@ export default class Task extends EventEmitter {
   workdir: string;
   command: string;
   volume: ?Volume;
-  ssh: Ssh;
 
   constructor(
     immidiate: boolean,
@@ -62,9 +61,7 @@ export default class Task extends EventEmitter {
     this.emit('data', 'REMONADE_CHOKIDAR:CHANGE');
   }
 
-  process(ssh: Ssh): Task {
-    const conn = new Client();
-
+  process(ssh: Ssh, end: boolean = false): Task {
     if (typeof this.command === 'function') {
       this.command()
         .on('ready', this._handleChokidarReady)
@@ -72,8 +69,8 @@ export default class Task extends EventEmitter {
       return this;
     }
 
-    conn.on('ready', async () => {
-      const exec = conn.exec.bind(conn);
+    const exec = ssh.conn.exec.bind(ssh.conn);
+    (async () => {
       try {
         const stream = await promisify(exec)(`
           (
@@ -86,17 +83,19 @@ export default class Task extends EventEmitter {
           .on('ready', this._handleReady)
           .on('data', this._handleData)
           .on('end', this._handleEnd)
+          .on('end', () => {
+            end && stream.end()
+          })
           .on('close', () => {
-            conn.end();
+            end && stream.end()
           })
           .stderr
           .on('data', this._handleError);
       } catch (err) {
         throw new Error(err);
       }
-    });
+    })();
 
-    conn.connect(ssh);
     return this;
   }
 }

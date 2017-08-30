@@ -1,23 +1,11 @@
 /* @flow */
 
-// import path from 'path';
 import {h, Component} from 'ink';
 import * as React from 'react';
-// import chokidar from 'chokidar';
 import termSize from 'term-size';
-// import execa from 'execa';
-// import debounce from 'lodash.debounce';
-// import chalk from 'chalk';
 import bind from 'lodash-decorators/bind';
-// import exitHook from 'async-exit-hook';
 import Subject from 'components/subject';
 import Log from 'components/log';
-// import RemoteMachine from 'helpers/remote-machine';
-// import Command from 'helpers/command';
-// import Cup from 'helpers/cup';
-// import Rsync from 'helpers/rsync';
-
-// const ADJUST_ROW_NUMBER = 4;
 
 export default class Remonade extends Component {
   props: Config;
@@ -44,7 +32,9 @@ export default class Remonade extends Component {
     const subjects = this.props.machines.map(machine => {
       return (
         <div key={machine.label}>
-          <Subject color={machine.color}>{machine.label}</Subject>
+          <Subject color={machine.color}>
+            {machine.label} ∇ {machine.logfilename}
+          </Subject>
           <Log
             rowLength={this.state.rowLength}
             colLength={this.state.colLength}
