@@ -24,6 +24,7 @@
 		},
 		"moduleFileExtensions": [
 			"js",
+      "jsx",
 			"json"
 		],
 		"coverageDirectory": "./coverage/",
