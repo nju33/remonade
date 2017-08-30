@@ -1,3 +1,4 @@
+import EventEmitter from 'events';
 import Ssh from 'helpers/ssh';
 import Task from 'helpers/task';
 import Machine from './machine';
@@ -96,8 +97,34 @@ describe('Machine', () => {
       expect(machine.nonImmidiatelyTasks.length).toBe(1);
     });
 
-    // test('process', () => {
-    //   machine.runImmidiatelyTasks();
-    // });
+    describe('run tasks', () => {
+      test('data event in case of default', () => {
+        const task = new EventEmitter();
+        task.process = jest.fn().mockReturnThis();
+        Object.defineProperty(machine, 'immidiatelyTasks', {
+          get: jest.fn(() => [task])
+        });
+
+        const log = jest.spyOn(machine, 'log');
+        machine.runImmidiatelyTasks();
+        task.emit('data', 'default');
+        expect(log).toHaveBeenCalledWith('default');
+      });
+
+      test('data event in case of ready and change', () => {
+        const task = new EventEmitter();
+        task.process = jest.fn().mockReturnThis();
+        Object.defineProperty(machine, 'immidiatelyTasks', {
+          get: jest.fn(() => [task])
+        });
+
+        const _runTasks = jest.spyOn(machine, '_runTasks');
+        machine.runImmidiatelyTasks();
+        task.emit('data', 'REMONADE_CHOKIDAR:READY');
+        task.emit('data', 'REMONADE_CHOKIDAR:CHANGE');
+
+        expect(_runTasks).toHaveBeenCalledTimes(2);
+      });
+    });
   });
 });

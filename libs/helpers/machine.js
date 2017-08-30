@@ -72,6 +72,36 @@ export default class Machine extends EventEmitter {
     return this.tasks.filter(task => !task.immidiate);
   }
 
+  async _runTasks(): Promise<void | Error> {
+    const tasks = this.tasks
+      .filter(task => {
+        const file = 'node_modules/bin/remonade-chokidar.js';
+        return typeof task.command === 'function' ||
+               task.command.trim().startsWith(file);
+      })
+      .filter(task => task.immidiate);
+
+    if (tasks.length > 0) {
+      await Promise.all(
+        tasks.map(async task => {
+          if (task.volume) {
+            const command = task.volume.rsyncCommand;
+            try {
+              const result = await execa.shell(command);
+              this.log([
+                '$ ' + command,
+                result.stdout
+              ]);
+            } catch (err) {
+              throw new Error(err);
+            }
+          }
+        })
+      );
+      this.runNonImmidiatelyTasks();
+    }
+  }
+
   runImmidiatelyTasks(): void {
     // if (!this.ssh) {
     //   return;
@@ -88,30 +118,7 @@ export default class Machine extends EventEmitter {
           }
           case 'REMONADE_CHOKIDAR:READY':
           case 'REMONADE_CHOKIDAR:CHANGE': {
-            const tasks = this.tasks
-              .filter(task => {
-                const file = 'node_modules/bin/remonade-chokidar.js';
-                return typeof task.command === 'function' ||
-                       task.command.trim().startsWith(file);
-              })
-              .filter(task => task.immidiate);
-            if (tasks.length > 0) {
-              await Promise.all(
-                tasks.map(async task => {
-                  if (task.volume) {
-                    const command = task.volume.rsyncCommand;
-                    try {
-                      const result = await execa.shell(command);
-                      this.log('$ ' + command);
-                      this.log(result.stdout);
-                    } catch (err) {
-                      throw new Error(err);
-                    }
-                  }
-                })
-              );
-              this.runNonImmidiatelyTasks();
-            }
+            this._runTasks();
             return;
           }
           default: {
