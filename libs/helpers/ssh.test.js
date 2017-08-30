@@ -20,7 +20,12 @@ describe('Ssh', () => {
   });
 
   test('set this privateKey', async () => {
+    jest
+      .spyOn(ssh, '_runConnection')
+      .mockImplementation(() => {
+        ssh.conn.emit('ready');
+      });
     await ssh.init();
-    expect(ssh.privateKey).toBe('identifyfile');
+    expect(ssh.privateKey.trim()).toBe('identifyfile');
   });
 });

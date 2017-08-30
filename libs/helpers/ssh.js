@@ -26,9 +26,9 @@ export default class Ssh {
 
   async init() {
     const readFile = promisify(fs.readFile);
-    const privateKey = await readFile((this: SshProp).identifyFile, 'utf-8');
-    this.config.privateKey = privateKey.trim();
-    (this: SshProp).privateKey = this.config.privateKey;
+    const privateKey = await readFile(this.config.identifyFile, 'utf-8');
+    this.config.privateKey = privateKey;
+    (this: SshProp).privateKey = privateKey;
     try {
       await this.connect();
     } catch (err) {
@@ -37,13 +37,17 @@ export default class Ssh {
     return this;
   }
 
+  _runConnection(): void {
+    this.conn.connect(this.config);
+  }
+
   connect(): Promise<void | Error> {
     this.conn = new Client();
     return new Promise((resolve, reject) => {
       this.conn
         .on('ready', () => resolve())
         .on('error', err => reject(err));
-      this.conn.connect(this.config);
+      this._runConnection();
     });
   }
 }
