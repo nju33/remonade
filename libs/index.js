@@ -43,7 +43,13 @@ export default class Remonade extends EventEmitter {
         })
         .map(async pairs => {
           const [label, opts] = pairs;
-          const ssh = await (new Ssh(opts.ssh)).init();
+          const ssh = await (async () => {
+            if (process.env.NODE_ENV === 'test') {
+              return new Ssh({});
+            }
+            const _ssh = await (new Ssh(opts.ssh)).init();
+            return _ssh;
+          })();
 
           const machine = new Machine(label, opts.color, opts.base, ssh);
           await machine.init(logDirpath);
@@ -120,12 +126,6 @@ export default class Remonade extends EventEmitter {
 
   start() {
     render(<RemonadeComponent {...this.config}/>);
-
-    // this.config.machines.forEach(machine => {
-    //   machine.on('update', debounce(() => {
-    //     render(<RemonadeComponent {...this.config}/>);
-    //   }, 100));
-    // });
   }
 }
 
