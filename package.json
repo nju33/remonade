@@ -24,6 +24,7 @@
 		},
 		"moduleFileExtensions": [
 			"js",
+      "jsx",
 			"json"
 		],
 		"coverageDirectory": "./coverage/",
@@ -75,6 +76,7 @@
 		"rsync": "^0.6.1",
 		"ssh2": "^0.5.5",
 		"term-size": "^1.2.0",
+		"tmp": "^0.0.33",
 		"yargs": "^8.0.2"
 	}
 }

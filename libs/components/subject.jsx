@@ -1,3 +1,5 @@
+/* @flow */
+
 import {h, Component, Text} from 'ink';
 
 module.exports = class Subject extends Component {

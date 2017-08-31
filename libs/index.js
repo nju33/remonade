@@ -1,6 +1,7 @@
 /* @flow */
 
 import path from 'path';
+import {promisify} from 'util';
 import * as React from 'react';
 import EventEmitter from 'events';
 import {h, render} from 'ink';
@@ -11,13 +12,21 @@ import Machine from 'helpers/machine';
 import Volume from 'helpers/volume';
 import Task from 'helpers/task';
 import debounce from 'lodash.debounce';
+import tmp from 'tmp';
+
+tmp.setGracefulCleanup();
 
 export default class Remonade extends EventEmitter {
   config: Config;
 
   static async adaptConfig(config: ArgumentConfig) {
     const base = config.base || process.cwd();
+    const logDirpath = await promisify(tmp.dir)({
+      template: '/tmp/remonade-XXXXXX/'
+    });
+
     const localMachine = new Machine('local', config.color, base);
+    await localMachine.init(logDirpath);
 
     const machineEntries = Object.entries(config.machines || {});
     const machines = await Promise.all(
@@ -37,6 +46,7 @@ export default class Remonade extends EventEmitter {
           const ssh = await (new Ssh(opts.ssh)).init();
 
           const machine = new Machine(label, opts.color, opts.base, ssh);
+          await machine.init(logDirpath);
           opts.tasks.forEach(task => {
             const workdir = (() => {
               if (machine.base === null) {
