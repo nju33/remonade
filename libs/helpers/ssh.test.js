@@ -7,14 +7,13 @@ describe('Ssh', () => {
 
   beforeEach(() => {
     ssh = new Ssh({
-      user: 'foo',
       hostname: '0.0.0.0',
       identifyFile: identifyPath
     });
   });
 
   test('access prop', () => {
-    expect(ssh.user).toBe('foo');
+    expect(ssh.user).toBe('remonade');
     expect(ssh.hostname).toBe('0.0.0.0');
     expect(ssh.identifyFile).toBe(identifyPath);
   });

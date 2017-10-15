@@ -20,6 +20,7 @@ export default class Ssh {
   conn: Client;
 
   constructor(config: SshConfig) {
+    Object.assign(config, {user: 'remonade'});
     this.config = config;
     Object.assign((this: SshProp), config);
   }

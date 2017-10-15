@@ -14,7 +14,7 @@ export default {
       ],
       ssh: {
         hostname: '54.64.238.197',
-        user: 'remonade',
+        // user: 'remonade',
         identifyFile: process.env.HOME + '/.ssh/remonade'
       }
     },
@@ -40,7 +40,7 @@ export default {
       ],
       ssh: {
         hostname: '54.64.238.197',
-        user: 'remonade',
+        // user: 'remonade',
         identifyFile: process.env.HOME + '/.ssh/remonade'
       }
     }

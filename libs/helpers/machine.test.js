@@ -1,3 +1,4 @@
+/* eslint-disable max-nested-callbacks */
 import EventEmitter from 'events';
 import Ssh from 'helpers/ssh';
 import Task from 'helpers/task';
@@ -42,7 +43,6 @@ describe('Machine', () => {
 
     beforeEach(() => {
       const ssh = new Ssh({
-        user: 'foo',
         hostname: '0.0.0.0',
         identifyFile: 'aaa/bbb/ccc'
       });
@@ -50,7 +50,7 @@ describe('Machine', () => {
     });
 
     it('has userHost', () => {
-      expect(machine.userHost).toBe('foo@0.0.0.0');
+      expect(machine.userHost).toBe('remonade@0.0.0.0');
     });
 
     it('has identifyFile', () => {
@@ -68,7 +68,6 @@ describe('Machine', () => {
 
     beforeEach(() => {
       const ssh = new Ssh({
-        user: 'foo',
         hostname: '0.0.0.0',
         identifyFile: 'aaa/bbb/ccc'
       });
@@ -79,14 +78,14 @@ describe('Machine', () => {
     });
 
     test('logs', () => {
-      machine.log('foo');
+      machine.log('remonade');
       machine.log(['bar', 'baz']);
 
       expect(machine.logs.length).toBe(3);
     });
 
     test('getRsyncPath', () => {
-      expect(machine.getRsyncPath('/home')).toBe('foo@0.0.0.0:/home');
+      expect(machine.getRsyncPath('/home')).toBe('remonade@0.0.0.0:/home');
     });
 
     test('immidiatelyTasks', () => {
@@ -168,10 +167,10 @@ describe('Machine', () => {
 
         machine.tasks = [task, task2];
         jest.mock('execa', () => {
-          shell: jest.fn().mockImplementation(() => Promise.resolve())
+          jest.fn().mockImplementation(() => Promise.resolve());
         });
 
-        // Object.defineProperty(machine, 'immidiatelyTasks', {
+        // object.defineProperty(machine, 'immidiatelyTasks', {
         //   get: jest.fn(() => [task, task2])
         // });
 
