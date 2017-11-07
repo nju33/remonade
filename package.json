@@ -54,7 +54,7 @@
 		"gulp-babel": "^7.0.0",
 		"gulp-cached": "^1.1.1",
 		"gulp-plumber": "^1.1.0",
-		"gulp-sourcemaps": "^2.6.0",
+		"gulp-sourcemaps": "^2.6.1",
 		"jest": "^20.0.4",
 		"pretty-error": "^2.1.1"
 	},
