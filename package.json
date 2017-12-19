@@ -65,7 +65,7 @@
 		"execa": "^0.8.0",
 		"ink": "^0.3.1",
 		"interpret": "^1.0.4",
-		"liftoff": "^2.3.0",
+		"liftoff": "^2.5.0",
 		"lodash-decorators": "^4.4.1",
 		"lodash.chunk": "^4.2.0",
 		"lodash.debounce": "^4.0.8",
