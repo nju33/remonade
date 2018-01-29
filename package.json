@@ -51,7 +51,7 @@
 		"eslint-plugin-react": "^7.4.0",
 		"flow-bin": "^0.59.0",
 		"gulp": "^3.9.1",
-		"gulp-babel": "^7.0.0",
+		"gulp-babel": "^7.0.1",
 		"gulp-cached": "^1.1.1",
 		"gulp-plumber": "^1.1.0",
 		"gulp-sourcemaps": "^2.6.1",
