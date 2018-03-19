@@ -66,7 +66,7 @@
 		"ink": "^0.3.1",
 		"interpret": "^1.0.4",
 		"liftoff": "^2.3.0",
-		"lodash-decorators": "^4.4.1",
+		"lodash-decorators": "^5.0.0",
 		"lodash.chunk": "^4.2.0",
 		"lodash.debounce": "^4.0.8",
 		"minimist": "^1.2.0",
