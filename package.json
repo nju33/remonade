@@ -46,7 +46,7 @@
 		"eslint-config-xo": "^0.18.2",
 		"eslint-config-xo-react": "^0.13.0",
 		"eslint-plugin-flowtype": "^2.35.0",
-		"eslint-plugin-jest": "^20.0.3",
+		"eslint-plugin-jest": "^21.15.1",
 		"eslint-plugin-jsx-a11y": "^6.0.2",
 		"eslint-plugin-react": "^7.4.0",
 		"flow-bin": "^0.59.0",
