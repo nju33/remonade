@@ -63,7 +63,7 @@
 		"async-exit-hook": "^2.0.1",
 		"chokidar": "^1.7.0",
 		"execa": "^0.8.0",
-		"ink": "^0.3.1",
+		"ink": "^0.5.0",
 		"interpret": "^1.0.4",
 		"liftoff": "^2.3.0",
 		"lodash-decorators": "^4.4.1",
