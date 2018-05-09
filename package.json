@@ -41,7 +41,7 @@
 		"babel-preset-flow": "^6.23.0",
 		"babel-register": "^6.26.0",
 		"beeper": "^1.1.1",
-		"codecov": "^2.3.0",
+		"codecov": "^3.0.2",
 		"eslint": "^4.5.0",
 		"eslint-config-xo": "^0.18.2",
 		"eslint-config-xo-react": "^0.13.0",
